@@ -1,18 +1,17 @@
 #include "Includes.h"
 #include "Reading.h"
 #include "Stack.h"
-#include "Translate.h"
+#include "Assembly.h"
 #include "Processing.h"
 
-ProcessingErr_t Processing(StackElem_t **IP, Stack_t *stk, int NumCommands)
+ProcessingErr_t Processing(StackElem_t **IP, Stack_t *stk, int CountInstructs)
 {
     ProcessingErr_t err = PROCESSING_OK;
 
-    while (NumCommands-- > 0)
+    while (CountInstructs-- > 0)
     {
-        err = RunCommand(IP, stk);
-        
-        printf("Err = %d\n", err);
+        err = RunInstruct(IP, stk);
+
         if (err)
         {
             ProcessingErrMsg(err);
@@ -22,9 +21,9 @@ ProcessingErr_t Processing(StackElem_t **IP, Stack_t *stk, int NumCommands)
     return err;
 }
 
-ProcessingErr_t RunCommand(StackElem_t **IP, Stack_t *stk)
+ProcessingErr_t RunInstruct(StackElem_t **IP, Stack_t *stk)
 {
-    CmdNum_t CmdNum = (CmdNum_t)(**IP);
+    InstructNum_t CmdNum = (InstructNum_t)(**IP);
     printf("CmdNum = %d\n", CmdNum);
 
     switch (CmdNum)
@@ -95,17 +94,17 @@ ProcessingErr_t RunCommand(StackElem_t **IP, Stack_t *stk)
         case HLT_num:
         {
             (*IP)++;
-            return HLT_COMMAND;
+            return HLT_INSTRUCT;
         }
         break;
 
         case UNKNOWN_num:
         {
-            return UNKNOWN_COMMAND;
+            return UNKNOWN_INSTRUCT;
         }
 
         default:
-            return PROCESSING_OK;;
+            return PROCESSING_OK;
     }
 }
 
@@ -117,17 +116,17 @@ void ProcessingErrMsg(ProcessingErr_t err)
             return;
             break;
 
-        case UNKNOWN_COMMAND:
-            printf("Unknown Command\n");
+        case UNKNOWN_INSTRUCT:
+            printf("Unknown Instruct\n");
             break;
 
         case INVALID_OPERAND:
             printf("Invalid Operand\n");
             break;
 
-        case HLT_COMMAND:
+        case HLT_INSTRUCT:
             return;
-            break
+            break;
 
         default:
             ;

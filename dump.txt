@@ -1,7 +1,7 @@
 STACK_DUMP
 ****************************************
-Stack_t <stk> [0x7c8801500060], main at src/main.cpp: 27
-Created at 16:06:55 on Oct  8 2026
+Stack_t <stk> [0x7985d7100080], main at src/main.cpp: 31
+Created at 00:20:47 on Oct  9 2026
 {
 chicken_left = DEADDEAD
 chicken_left = D01B0EB

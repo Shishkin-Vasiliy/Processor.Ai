@@ -3,13 +3,13 @@
 
 enum ProcessingErr_t {
     PROCESSING_OK,
-    UNKNOWN_COMMAND,
+    UNKNOWN_INSTRUCT,
     INVALID_OPERAND,
-    HLT_COMMAND
+    HLT_INSTRUCT
 };
 
-ProcessingErr_t Processing(StackElem_t **IP, Stack_t *stk, int NumCommands);
-ProcessingErr_t RunCommand(StackElem_t **IP, Stack_t *stk);
+ProcessingErr_t Processing(StackElem_t **IP, Stack_t *stk, int CountInstructs);
+ProcessingErr_t RunInstruct(StackElem_t **IP, Stack_t *stk);
 void ProcessingErrMsg(ProcessingErr_t err);
 
 #endif
