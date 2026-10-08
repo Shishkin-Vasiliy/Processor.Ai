@@ -1,8 +1,6 @@
 #ifndef STACK_H
 #define STACK_H
 
-#define STACK_DEBUG
-
 typedef double StackElem_t;
 
 #ifdef STACK_DEBUG

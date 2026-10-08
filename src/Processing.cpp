@@ -11,12 +11,13 @@ ProcessingErr_t Processing(StackElem_t **IP, Stack_t *stk, int NumCommands)
     while (NumCommands-- > 0)
     {
         err = RunCommand(IP, stk);
+        
         printf("Err = %d\n", err);
-        //if (err)
-        //{
-            //ProcessingErrMsg(err);
-            //return err;
-        //}
+        if (err)
+        {
+            ProcessingErrMsg(err);
+            return err;
+        }
     }
     return err;
 }
@@ -24,6 +25,7 @@ ProcessingErr_t Processing(StackElem_t **IP, Stack_t *stk, int NumCommands)
 ProcessingErr_t RunCommand(StackElem_t **IP, Stack_t *stk)
 {
     CmdNum_t CmdNum = (CmdNum_t)(**IP);
+    printf("CmdNum = %d\n", CmdNum);
 
     switch (CmdNum)
     {
@@ -92,13 +94,14 @@ ProcessingErr_t RunCommand(StackElem_t **IP, Stack_t *stk)
 
         case HLT_num:
         {
-           return PROCESSING_OK;; 
+            (*IP)++;
+            return HLT_COMMAND;
         }
         break;
 
         case UNKNOWN_num:
         {
-            return PROCESSING_OK;
+            return UNKNOWN_COMMAND;
         }
 
         default:
@@ -106,3 +109,27 @@ ProcessingErr_t RunCommand(StackElem_t **IP, Stack_t *stk)
     }
 }
 
+void ProcessingErrMsg(ProcessingErr_t err)
+{
+    switch(err)
+    {
+        case PROCESSING_OK:
+            return;
+            break;
+
+        case UNKNOWN_COMMAND:
+            printf("Unknown Command\n");
+            break;
+
+        case INVALID_OPERAND:
+            printf("Invalid Operand\n");
+            break;
+
+        case HLT_COMMAND:
+            return;
+            break
+
+        default:
+            ;
+    }
+}

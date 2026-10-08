@@ -19,10 +19,13 @@ int Translate(const char *ASM, const char *ByteCode, StackElem_t **CodeSegment)
     {
         err = BAD_INDEX_PTR;
         TranslateErrMsg(err);
+        FreeBuf(&buf, file_size);
+        FreeIndex(&index, nlines);
         return 0;
     }
 
     nlines = ReadFromFile(&buf, index, file_size, fd);
+    printf("nlines = %d\n", nlines);
 
     *CodeSegment = (StackElem_t *)calloc(2 * nlines, sizeof(StackElem_t));
     
@@ -30,7 +33,9 @@ int Translate(const char *ASM, const char *ByteCode, StackElem_t **CodeSegment)
     {   
         err = BAD_CODESEG_PTR;
         TranslateErrMsg(err);
-        //return 0;
+        FreeBuf(&buf, file_size);
+        FreeIndex(&index, nlines);
+        return 0;
     }
     
     StackElem_t *temp = *CodeSegment;
@@ -40,8 +45,10 @@ int Translate(const char *ASM, const char *ByteCode, StackElem_t **CodeSegment)
         err = TranslateCommand(index[i], &temp);
         if (err)
         {
-            TranslateErrMsg(err);  
-            //return 0;                                      //
+            TranslateErrMsg(err);
+            FreeBuf(&buf, file_size);
+            FreeIndex(&index, nlines);
+            return 0;                        
         }
     }      
 
@@ -88,6 +95,21 @@ TranslateErr_t TranslateCommand(const char *string, StackElem_t **temp)
         return SYNTAX_ERR;
 }
 
+TranslateErr_t FreeCodeSegment(StackElem_t **CodeSegment, int NumCommands)
+{
+    if (!CodeSegment || !*CodeSegment)
+        return BAD_CODESEG_PTR;
+
+    for (int i = 0; i < NumCommands; i++)
+    {
+        (*CodeSegment)[i] = POIZON_DBL;
+    }
+    free(*CodeSegment);
+    *CodeSegment = POIZON_IP_PTR;
+
+    return TRANSLATION_SUCCESS;
+}
+
 CmdNum_t GetCmdNum(const char *Command)
 {
     if (strcmp(Command, "HLT") == 0)
@@ -101,7 +123,7 @@ CmdNum_t GetCmdNum(const char *Command)
     else if (strcmp(Command, "DIV") == 0)
         return DIV_num;
     else if (strcmp(Command, "OUT") == 0)
-        return OUT_num;
+        return OUT_num; 
     else
         return UNKNOWN_num;
 }
@@ -110,6 +132,9 @@ void TranslateErrMsg(TranslateErr_t err)
 {
     switch(err)
     {
+        case TRANSLATION_SUCCESS:
+            break;
+
         case SYNTAX_ERR:
             printf("Syntax Error\n");
             break;
@@ -120,7 +145,6 @@ void TranslateErrMsg(TranslateErr_t err)
 
         case BAD_INDEX_PTR:
             printf("Invalid pointer at index of commands (strings)\n");
-            break;
 
         default:
             ;

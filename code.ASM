@@ -6,4 +6,5 @@ PUSH 3
 SUB
 DIV
 OUT
+
 HLT

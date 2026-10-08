@@ -4,7 +4,8 @@
 enum ProcessingErr_t {
     PROCESSING_OK,
     UNKNOWN_COMMAND,
-    INVALID_OPERAND
+    INVALID_OPERAND,
+    HLT_COMMAND
 };
 
 ProcessingErr_t Processing(StackElem_t **IP, Stack_t *stk, int NumCommands);

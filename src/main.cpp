@@ -24,12 +24,12 @@ int main(void)
     Stack_t stk = {};
     size_t capacity = 17;
 
-    StackErr_t err = STACK_CTOR(stk, capacity);
-    ERROR_MSG(&stk, err);
+    StackErr_t StkErr = STACK_CTOR(stk, capacity);
+    ERROR_MSG(&stk, StkErr);
 
-    Processing(&IP, &stk, NumCommands);
+    ProcessingErr_t PrErr = Processing(&IP, &stk, NumCommands);
 
-    free(CodeSegment);
+    FreeCodeSegment(&CodeSegment, NumCommands);
     StackDTor(&stk); 
     
     return 0;

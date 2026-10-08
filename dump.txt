@@ -1,13 +1,13 @@
 STACK_DUMP
 ****************************************
-Stack_t <stk> [0x74bbf9f00060], main at src/main.cpp: 27
-Created at 00:25:36 on Oct  8 2026
+Stack_t <stk> [0x7c8801500060], main at src/main.cpp: 27
+Created at 16:06:55 on Oct  8 2026
 {
 chicken_left = DEADDEAD
 chicken_left = D01B0EB
 capacity     = 17
 size         = 1
-buf[0x50e000000120]
+buf[0x50e000000040]
     {
     [ChickenLower] = 1e+14
     *[0] = 10
