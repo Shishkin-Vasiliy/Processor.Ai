@@ -8,12 +8,14 @@
 #define POIZON_CHAR_PTR (char *) 13
 #define POIZON_CHAR '@'
 
+
 int OpenFile(const char *file_name);
-int GetFileSize(const char *file_name);
-int ReadFromFile(char **buf, char **index, int file_size, int descr);
-int SplitBuf(char **buf, char **index);
+size_t GetFileSize(const char *file_name);
+size_t ReadFromFile(char **buf, char **index, size_t file_size, int descr);
+size_t SplitBuf(char **buf, char **index);
 void PrintStrings(char **index, size_t nlines, const char *REASON);
-int FreeBuf(char **buf, int file_size);
-int FreeIndex(char ***index, int nlines);
+int FreeBuf(char **buf, size_t file_size);
+int FreeIndex(char ***index, size_t nlines);
+int IsEmptyLine(const char *s);
 
 #endif

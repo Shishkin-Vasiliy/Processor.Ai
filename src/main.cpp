@@ -1,46 +1,30 @@
 #include "Includes.h"
 #include "Reading.h"
 #include "Stack.h"
-#include "Assembly.h"
-#include "Processing.h"
+#include "Processor.h"
+#include "Asm.h"
 
 int main(void)
 {
-    const char *ASM = "code.asm";
-    const char *ByteCode = "code.txt";
-    const char *DASM = "code.disasm";
-
-    StackElem_t *CodeSegment = POIZON_IP_PTR;
-
-    int CountInstructs = 0;
-    int CodeLen = Assembly(ASM, ByteCode, &CodeSegment, &CountInstructs);     
-       
-    printf("CODESEGMENT\n");
-    for (int i = 0; i < CodeLen; i++)
-    {
-        printf("[%d] = %lg\n", i, CodeSegment[i]);
-    }
-
-    StackElem_t *IP = CodeSegment;
-
-    int CountInstructsDASM = DisAssembly(IP, CodeLen, DASM);
-
-    if (CountInstructsDASM == ZERO_INSTRUCTS)
-        printf("DisAssembly failed\n");
+    AsmContext_t AsmContext = {
+    .Asm_file = "code.asm",
+    .ByteCode_file = "code.txt"
+    };
 
     Stack_t stk = {};
-    size_t capacity = 17;
 
-    StackErr_t StkErr = STACK_CTOR(stk, capacity);
-    ERROR_MSG(&stk, StkErr);
+    Processor_t Processor = {};
+    ProcessorInit(&stk, &Processor);
 
-    ProcessingErr_t PrErr = Processing(&IP, &stk, CountInstructs);
+    AssemblyErr_t AsmErr = Assembly(AsmContext, &Processor);
+    if (AsmErr)
+        printf("AsmErr = <%d>\n", AsmErr);
+
+    ProcessingErr_t PrErr = Processing(&Processor);
     if (PrErr)
-        ProcessingErrMsg(PrErr);
+        printf("PrErr = %d\n", PrErr);
 
-    FreeCodeSegment(&CodeSegment, CountInstructs);
-    StackDTor(&stk); 
-    
+    ProcessorDeinit(&Processor);
     return 0;
 }
 

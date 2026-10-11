@@ -7,31 +7,31 @@ int OpenFile(const char *file_name)
     return descr;
 }
 
-int GetFileSize(const char *file_name)
+size_t GetFileSize(const char *file_name)
 {
     struct stat stat_buf = {};
     stat(file_name, &stat_buf);
-    int file_size = stat_buf.st_size;
+    size_t file_size = stat_buf.st_size;
 
     return file_size;
 }
 
-int ReadFromFile(char **buf, char **index, int file_size, int descr)
+size_t ReadFromFile(char **buf, char **index, size_t file_size, int descr)
 {
     if (!index)
-        return EOF;
+        return 0;
 
-    int nlines = 0;
+    size_t nlines = 0;
 
     if (descr == EOF)
-        return EOF;
+        return 0;
 
     *buf = (char *)calloc(file_size + 1, sizeof(char));
     if (!(*buf))
-        return EOF;
+        return 0;
 
     read(descr, *buf, file_size);
-    //
+
     *(*buf + file_size) = '\0'; 
 
     nlines = SplitBuf(buf, index);
@@ -39,13 +39,13 @@ int ReadFromFile(char **buf, char **index, int file_size, int descr)
     return nlines;
 }
 
-int SplitBuf(char **buf, char **index)
+size_t SplitBuf(char **buf, char **index)
 {
     if (!buf)
-        return EOF;
+        return 0;
 
-    int i = 0;
-    int nlines = 1;
+    size_t i = 0;
+    size_t nlines = 1;
 
     char *temp = *buf;
     index[i] = temp;
@@ -58,8 +58,8 @@ int SplitBuf(char **buf, char **index)
             temp++;
             i++;
             nlines++;
-            while(isspace(*temp))
-                temp++;  
+            //while(isspace(*temp))          ///////  возможно тут проблема с пустыми строками (их лучше записывать и не пропускать)
+            //    temp++;  
             index[i] = temp;
             continue;
         }
@@ -82,13 +82,13 @@ void PrintStrings(char **index, size_t nlines, const char *REASON)
     printf("***************************************\n\n\n\n\n\n\n\n\n\n\n");
 }
 
-int FreeBuf(char **buf, int file_size)
+int FreeBuf(char **buf, size_t file_size)
 {
     if (!buf)   
         return EOF;
 
     char *pos = *buf;
-    for (int i = 0; i < file_size + 1; i++)
+    for (size_t i = 0; i < file_size + 1; i++)
     {
         pos[i] = POIZON_CHAR;
     }
@@ -98,12 +98,12 @@ int FreeBuf(char **buf, int file_size)
     return 0;
 } 
 
-int FreeIndex(char ***index, int nlines)
+int FreeIndex(char ***index, size_t nlines)
 {
-    if (!(*index) || !index)
+    if (!index || !(*index))
         return EOF;
 
-    for (int i = 0; i < nlines; i++)
+    for (size_t i = 0; i < nlines; i++)
     {
         (*index)[i] = POIZON_CHAR_PTR;
     }
@@ -112,4 +112,15 @@ int FreeIndex(char ***index, int nlines)
     *index = POIZON_INDEX_PTR;
     
     return 0;
+}
+
+int IsEmptyLine(const char *s)
+{
+    while (*s)
+    {
+        if (!isspace(*s))
+            return 0;
+        s++;
+    }
+    return 1;
 }

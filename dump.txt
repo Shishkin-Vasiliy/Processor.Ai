@@ -1,16 +1,16 @@
 STACK_DUMP
 ****************************************
-Stack_t <stk> [0x7985d7100080], main at src/main.cpp: 31
-Created at 00:20:47 on Oct  9 2026
+Stack_t <*stk> [0x77bd3dc000a0], ProcessorInit at src/Processor.cpp: 29
+Created at 19:17:46 on Oct 11 2026
 {
 chicken_left = DEADDEAD
 chicken_left = D01B0EB
-capacity     = 17
-size         = 1
-buf[0x50e000000040]
+capacity     = 16
+size         = 0
+buf[0x50d000000040]
     {
     [ChickenLower] = 1e+14
-    *[0] = 10
+     [0] = nan (POIZON)
      [1] = nan (POIZON)
      [2] = nan (POIZON)
      [3] = nan (POIZON)
@@ -26,7 +26,6 @@ buf[0x50e000000040]
      [13] = nan (POIZON)
      [14] = nan (POIZON)
      [15] = nan (POIZON)
-     [16] = nan (POIZON)
     [ChickenUpper] = 1e+13
     }
 }
