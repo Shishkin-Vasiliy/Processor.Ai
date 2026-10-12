@@ -122,6 +122,9 @@ int FreeIndex(char ***index, size_t nlines)
 
 int IsEmptyLine(const char *s)
 {
+    if (*s == '\0')
+        return 1;
+        
     while (*s)
     {
         if (!isspace(*s))

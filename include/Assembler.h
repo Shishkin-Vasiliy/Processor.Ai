@@ -20,5 +20,6 @@ AssemblyErr_t Assembly(AsmContext_t AsmContext, Processor_t *Processor);
 AssemblyErr_t AssembleInstruct(const char *string, Processor_t *Processor, int *Labels, size_t PassNum, FILE *ByteCode_ptr);
 InstructNum_t GetInstructNum(const char *InstructBuf);
 REGS GetRegNum(const char *OperandBuf);
+void AssemblyErrMsg(AssemblyErr_t AsmErr, const char *Asm_file, size_t LineNum);
 
 #endif

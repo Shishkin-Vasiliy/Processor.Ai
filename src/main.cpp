@@ -2,8 +2,8 @@
 #include "Reading.h"
 #include "Stack.h"
 #include "Processor.h"
-#include "Asm.h"
-#include "DisAsm.h"
+#include "Assembler.h"
+#include "DisAssembler.h"
 
 int main(void)
 {
@@ -25,9 +25,7 @@ int main(void)
     if (AsmErr)
         printf("AsmErr = <%d>\n", AsmErr);
 
-    ProcessingErr_t PrErr = Processing(&Processor);
-    if (PrErr)
-        printf("PrErr = %d\n", PrErr);
+    Processing(&Processor);
 
     DisAssemblyErr_t DisAsmErr = DisAssembly(DisAsmContext, &Processor);
     if (DisAsmErr)

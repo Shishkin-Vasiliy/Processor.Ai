@@ -13,5 +13,6 @@ struct DisAsmContext_t {
 
 DisAssemblyErr_t DisAssembly(DisAsmContext_t DisAsmContext, Processor_t *Processor);
 DisAssemblyErr_t DisAssembleInstruct(FILE *DisAsm_ptr, Processor_t *Processor);
+void DisAssemblyErrMsg(DisAssemblyErr_t DisAsmErr);
 
 #endif

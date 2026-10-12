@@ -1,7 +1,7 @@
 #include "Includes.h"
 #include "Stack.h"
 #include "Processor.h"
-#include "DisAsm.h"
+#include "DisAssembler.h"
 
 DisAssemblyErr_t DisAssembly(DisAsmContext_t DisAsmContext, Processor_t *Processor)
 {
@@ -185,5 +185,25 @@ DisAssemblyErr_t DisAssembleInstruct(FILE *DisAsm_ptr, Processor_t *Processor)
         
         default:
             return DISASM_FAIL;
+    }
+}
+
+void DisAssemblyErrMsg(DisAssemblyErr_t DisAsmErr)
+{
+    switch (DisAsmErr)
+    {
+        case DISASSEMBLY_SUCCESS:
+            break;
+
+        case BAD_FILE_PTR:
+            printf("DisAssembly Error: File for DisAssembler opening failed\n");
+            break;
+
+        case DISASM_FAIL:
+            printf("DisAssembly Error: DisAssembly failed\n");
+            break;
+
+        default:
+            ;
     }
 }

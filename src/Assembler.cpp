@@ -2,7 +2,7 @@
 #include "Reading.h"
 #include "Stack.h"
 #include "Processor.h"
-#include "Asm.h"
+#include "Assembler.h"
 
 AssemblyErr_t Assembly(AsmContext_t AsmContext, Processor_t *Processor)
 {
@@ -20,6 +20,7 @@ AssemblyErr_t Assembly(AsmContext_t AsmContext, Processor_t *Processor)
 
     if (!index)
     {
+        AssemblyErrMsg(BAD_INDEX_PTR, Asm_file, 0);
         size_t nlines = file_size / sizeof(char *);
         FREEALL(ByteCode_ptr, fd, index, nlines, buf, file_size);
         return BAD_INDEX_PTR;
@@ -28,6 +29,7 @@ AssemblyErr_t Assembly(AsmContext_t AsmContext, Processor_t *Processor)
     size_t nlines = ReadFromFile(&buf, index, file_size, fd);
     if (nlines == 0)
     {
+        AssemblyErrMsg(BAD_INDEX_PTR, Asm_file, 0);
         FREEALL(ByteCode_ptr, fd, index, nlines, buf, file_size);
         return BAD_INDEX_PTR;
     }
@@ -38,6 +40,7 @@ AssemblyErr_t Assembly(AsmContext_t AsmContext, Processor_t *Processor)
 
     if (!(Processor -> CodeSegment))
     {
+        AssemblyErrMsg(BAD_CODESEG_PTR, Asm_file, 0);
         FREEALL(ByteCode_ptr, fd, index, nlines, buf, file_size);
         return BAD_CODESEG_PTR;
     }
@@ -52,14 +55,12 @@ AssemblyErr_t Assembly(AsmContext_t AsmContext, Processor_t *Processor)
         Processor -> IP = 0;
         for (size_t i = 0; i < nlines; i++)
         {
-            if (index[i][0] == '\0')
-                continue;
             if (IsEmptyLine(index[i]))
                 continue;
             AsmErr = AssembleInstruct(index[i], Processor, Labels, N, ByteCode_ptr);
             if (AsmErr)
             {
-                printf("ASM_ERROR %d: line %lu in file <%s>\n", AsmErr, i + 1, Asm_file);
+                AssemblyErrMsg(AsmErr, Asm_file, i);
                 FREEALL(ByteCode_ptr, fd, index, nlines, buf, file_size);
                 return AsmErr;
             }
@@ -250,4 +251,28 @@ REGS GetRegNum(const char *OperandBuf)
         return RDX;
     else
         return NUM_REGS;
+}
+
+void AssemblyErrMsg(AssemblyErr_t AsmErr, const char *Asm_file, size_t LineNum)
+{
+    switch(AsmErr)
+    {
+        case ASSEMBLY_SUCCESS:
+            break;
+
+        case SYNTAX_ERR:
+            printf("Assembly Error: Syntax Error at line %lu in file %s\n", LineNum, Asm_file);
+            break;
+
+        case BAD_CODESEG_PTR:
+            printf("Assembly Error: Invalid Pointer at CodeSegment\n");
+            break;
+
+        case BAD_INDEX_PTR:
+            printf("Assembly Error: Invalid Pointer at String Index\n");    
+            break;
+
+        default:
+            ;
+    }
 }
