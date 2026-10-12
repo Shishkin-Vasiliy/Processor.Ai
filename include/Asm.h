@@ -17,7 +17,7 @@ struct AsmContext_t {
 };
 
 AssemblyErr_t Assembly(AsmContext_t AsmContext, Processor_t *Processor);
-AssemblyErr_t AssembleInstruct(const char *string, Processor_t *Processor, int *Labels);
+AssemblyErr_t AssembleInstruct(const char *string, Processor_t *Processor, int *Labels, size_t PassNum, FILE *ByteCode_ptr);
 InstructNum_t GetInstructNum(const char *InstructBuf);
 REGS GetRegNum(const char *OperandBuf);
 

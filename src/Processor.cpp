@@ -61,6 +61,7 @@ ProcessingErr_t Processing(Processor_t *Processor)
             return err;
         }
     }
+    Processor -> IP = 0;
     return PROCESSING_OK;
 }
 
@@ -93,7 +94,7 @@ ProcessingErr_t PUSH(Processor_t *Processor)
     if (err)
     {
         printf("StackErr = %d\n", err);
-        return STACK_CRASHED;
+        return STACK_CORRUPTED;
     }
     Processor -> IP += 2;
     return PROCESSING_OK;
@@ -107,7 +108,7 @@ ProcessingErr_t POP(Processor_t *Processor)
     if (err)
     {
         printf("StackErr = %d\n", err);
-        return STACK_CRASHED;
+        return STACK_CORRUPTED;
     }
     Processor -> IP += 1;
     return PROCESSING_OK;
@@ -123,14 +124,14 @@ ProcessingErr_t ADD(Processor_t *Processor)
     if (err)
     {
         printf("StackErr = %d\n", err);
-        return STACK_CRASHED;
+        return STACK_CORRUPTED;
     }
 
     err = StackPop(stk, &op1);
     if (err)
     {
         printf("StackErr = %d\n", err);
-        return STACK_CRASHED;
+        return STACK_CORRUPTED;
     }
 
     res = op1 + op2;
@@ -138,7 +139,7 @@ ProcessingErr_t ADD(Processor_t *Processor)
     if (err)
     {
         printf("StackErr = %d\n", err);
-        return STACK_CRASHED;
+        return STACK_CORRUPTED;
     }
 
     Processor -> IP += 1;
@@ -155,14 +156,14 @@ ProcessingErr_t SUB(Processor_t *Processor)
     if (err)
     {
         printf("StackErr = %d\n", err);
-        return STACK_CRASHED;
+        return STACK_CORRUPTED;
     }
 
     err = StackPop(stk, &op1);
     if (err)
     {
         printf("StackErr = %d\n", err);
-        return STACK_CRASHED;
+        return STACK_CORRUPTED;
     }
 
     res = op1 - op2;
@@ -170,7 +171,7 @@ ProcessingErr_t SUB(Processor_t *Processor)
     if (err)
     {
         printf("StackErr = %d\n", err);
-        return STACK_CRASHED;
+        return STACK_CORRUPTED;
     }
 
     Processor -> IP += 1;
@@ -187,7 +188,7 @@ ProcessingErr_t DIV(Processor_t *Processor)
     if (err)
     {
         printf("StackErr = %d\n", err);
-        return STACK_CRASHED;
+        return STACK_CORRUPTED;
     }
 
     err = StackPop(stk, &op1);
@@ -195,7 +196,7 @@ ProcessingErr_t DIV(Processor_t *Processor)
     if (err)
     {
         printf("StackErr = %d\n", err);
-        return STACK_CRASHED;
+        return STACK_CORRUPTED;
     }
     if (DblCmp(op2, 0.0) != 0)
     {
@@ -205,7 +206,7 @@ ProcessingErr_t DIV(Processor_t *Processor)
         if (err)
         {
             printf("StackErr = %d\n", err);
-            return STACK_CRASHED;
+            return STACK_CORRUPTED;
         }
     }
     Processor -> IP += 1;
@@ -222,14 +223,14 @@ ProcessingErr_t MUL(Processor_t *Processor)
     if (err)
     {
         printf("StackErr = %d\n", err);
-        return STACK_CRASHED;
+        return STACK_CORRUPTED;
     }
 
     err = StackPop(stk, &op1);
     if (err)
     {
         printf("StackErr = %d\n", err);
-        return STACK_CRASHED;
+        return STACK_CORRUPTED;
     }
 
     res = op1 * op2;
@@ -237,7 +238,7 @@ ProcessingErr_t MUL(Processor_t *Processor)
     if (err)
     {
         printf("StackErr = %d\n", err);
-        return STACK_CRASHED;
+        return STACK_CORRUPTED;
     }
 
     Processor -> IP += 1;
@@ -258,7 +259,7 @@ ProcessingErr_t PUSHr(Processor_t *Processor)
     if (err)
     {
         printf("StackErr = %d\n", err);
-        return STACK_CRASHED;
+        return STACK_CORRUPTED;
     }
 
     Processor -> IP += 2;
@@ -270,14 +271,13 @@ ProcessingErr_t POPr(Processor_t *Processor)
     Stack_t *stk = Processor -> stk;
     int IP = Processor -> IP;
     StackElem_t *CodeSegment = Processor -> CodeSegment;
-    StackElem_t *Regs = Processor -> Regs;
     REGS RegNum = (REGS)CodeSegment[IP + 1];
 
     StackErr_t err = StackPop(stk, Processor -> Regs + RegNum);
     if (err)
     {
         printf("StackErr = %d\n", err);
-        return STACK_CRASHED;
+        return STACK_CORRUPTED;
     }
 
     Processor -> IP += 2;
@@ -301,14 +301,14 @@ ProcessingErr_t JA(Processor_t *Processor)
     if (err)
     {
         printf("StackErr = %d\n", err);
-        return STACK_CRASHED;
+        return STACK_CORRUPTED;
     }
     
     err = StackPop(stk, &b);
     if (err)
     {
         printf("StackErr = %d\n", err);
-        return STACK_CRASHED;
+        return STACK_CORRUPTED;
     }
 
     ProcessingErr_t JmpErr = PROCESSING_OK;
@@ -329,14 +329,14 @@ ProcessingErr_t JAE(Processor_t *Processor)
     if (err)
     {
         printf("StackErr = %d\n", err);
-        return STACK_CRASHED;
+        return STACK_CORRUPTED;
     }
     
     err = StackPop(stk, &b);
     if (err)
     {
         printf("StackErr = %d\n", err);
-        return STACK_CRASHED;
+        return STACK_CORRUPTED;
     }
 
     ProcessingErr_t JmpErr = PROCESSING_OK;
@@ -356,14 +356,14 @@ ProcessingErr_t JB(Processor_t *Processor)
     if (err)
     {
         printf("StackErr = %d\n", err);
-        return STACK_CRASHED;
+        return STACK_CORRUPTED;
     }
     
     err = StackPop(stk, &b);
     if (err)
     {
         printf("StackErr = %d\n", err);
-        return STACK_CRASHED;
+        return STACK_CORRUPTED;
     }
 
     ProcessingErr_t JmpErr = PROCESSING_OK;
@@ -383,14 +383,14 @@ ProcessingErr_t JBE(Processor_t *Processor)
     if (err)
     {
         printf("StackErr = %d\n", err);
-        return STACK_CRASHED;
+        return STACK_CORRUPTED;
     }
     
     err = StackPop(stk, &b);
     if (err)
     {
         printf("StackErr = %d\n", err);
-        return STACK_CRASHED;
+        return STACK_CORRUPTED;
     }
     ProcessingErr_t JmpErr = PROCESSING_OK;
     if (DblCmp(b, a) < 0 || DblCmp(a, b) == 0)
@@ -409,14 +409,14 @@ ProcessingErr_t JE(Processor_t *Processor)
     if (err)
     {
         printf("StackErr = %d\n", err);
-        return STACK_CRASHED;
+        return STACK_CORRUPTED;
     }
     
     err = StackPop(stk, &b);
     if (err)
     {
         printf("StackErr = %d\n", err);
-        return STACK_CRASHED;
+        return STACK_CORRUPTED;
     }
 
     ProcessingErr_t JmpErr = PROCESSING_OK;
@@ -436,14 +436,14 @@ ProcessingErr_t JNE(Processor_t *Processor)
     if (err)
     {
         printf("StackErr = %d\n", err);
-        return STACK_CRASHED;
+        return STACK_CORRUPTED;
     }
     
     err = StackPop(stk, &b);
     if (err)
     {
         printf("StackErr = %d\n", err);
-        return STACK_CRASHED;
+        return STACK_CORRUPTED;
     }
 
     ProcessingErr_t JmpErr = PROCESSING_OK;
@@ -462,7 +462,7 @@ ProcessingErr_t OUT(Processor_t *Processor)
     if (err)
     {
         printf("StackErr = %d\n", err);
-        return STACK_CRASHED;
+        return STACK_CORRUPTED;
     }
     printf("OUT: %lg\n", val);
     Processor -> IP += 1;
@@ -474,19 +474,25 @@ void ProcessingErrMsg(ProcessingErr_t err)
     switch(err)
     {
         case PROCESSING_OK:
-            return;
+            break;
+
+        case STACK_CORRUPTED:
+            printf("Processing Error: Stack Corrupted\n");
             break;
 
         case UNKNOWN_INSTRUCT:
-            printf("Unknown Instruct\n");
+            printf("Processing Error: Unknown Instruct\n");
+            break;
+
+        case HLT_INSTRUCT:
             break;
 
         case INVALID_OPERAND:
-            printf("Invalid Operand\n");
+            printf("Processing Error: Invalid Operand\n");
             break;
 
         case SEGMENTATION_FAULT:
-            printf("Segmentation Fault\n");
+            printf("Processing Error: Segmentation Fault\n");
             break;
 
         default:

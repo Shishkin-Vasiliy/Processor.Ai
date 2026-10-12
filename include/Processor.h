@@ -5,7 +5,7 @@
 
 enum ProcessingErr_t {
     PROCESSING_OK,
-    STACK_CRASHED,
+    STACK_CORRUPTED,
     HLT_INSTRUCT,
     UNKNOWN_INSTRUCT,
     INVALID_OPERAND,

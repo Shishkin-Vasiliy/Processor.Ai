@@ -7,11 +7,10 @@
 AssemblyErr_t Assembly(AsmContext_t AsmContext, Processor_t *Processor)
 {
     const char *Asm_file = AsmContext.Asm_file;
-    //const char *ByteCode_file = AsmContext.ByteCode_file;
+    const char *ByteCode_file = AsmContext.ByteCode_file;
 
-    //FILE *ByteCode_ptr = fopen(ByteCode_file, "w");
+    FILE *ByteCode_ptr = fopen(ByteCode_file, "w");
 
-    AssemblyErr_t err = ASSEMBLY_SUCCESS;
     char *buf = POIZON_CHAR_PTR;
 
     int fd = OpenFile(Asm_file);
@@ -21,15 +20,15 @@ AssemblyErr_t Assembly(AsmContext_t AsmContext, Processor_t *Processor)
 
     if (!index)
     {
-        FreeIndex(&index, file_size / sizeof(char *));
+        size_t nlines = file_size / sizeof(char *);
+        FREEALL(ByteCode_ptr, fd, index, nlines, buf, file_size);
         return BAD_INDEX_PTR;
     }
 
     size_t nlines = ReadFromFile(&buf, index, file_size, fd);
     if (nlines == 0)
     {
-        FreeIndex(&index, nlines);
-        FreeBuf(&buf, file_size);
+        FREEALL(ByteCode_ptr, fd, index, nlines, buf, file_size);
         return BAD_INDEX_PTR;
     }
 
@@ -39,8 +38,7 @@ AssemblyErr_t Assembly(AsmContext_t AsmContext, Processor_t *Processor)
 
     if (!(Processor -> CodeSegment))
     {
-        FreeIndex(&index, nlines);
-        FreeBuf(&buf, file_size);
+        FREEALL(ByteCode_ptr, fd, index, nlines, buf, file_size);
         return BAD_CODESEG_PTR;
     }
 
@@ -49,7 +47,7 @@ AssemblyErr_t Assembly(AsmContext_t AsmContext, Processor_t *Processor)
     for (size_t i = 0; i < MAX_LABELS; i++)
         Labels[i] = -1;
 
-    for (size_t N = 0; N < 2; N++)
+    for (size_t N = 1; N <= 2; N++)
     {
         Processor -> IP = 0;
         for (size_t i = 0; i < nlines; i++)
@@ -58,31 +56,24 @@ AssemblyErr_t Assembly(AsmContext_t AsmContext, Processor_t *Processor)
                 continue;
             if (IsEmptyLine(index[i]))
                 continue;
-            AsmErr = AssembleInstruct(index[i], Processor, Labels);
+            AsmErr = AssembleInstruct(index[i], Processor, Labels, N, ByteCode_ptr);
             if (AsmErr)
             {
                 printf("ASM_ERROR %d: line %lu in file <%s>\n", AsmErr, i + 1, Asm_file);
-                FreeIndex(&index, nlines);
-                FreeBuf(&buf, file_size);
+                FREEALL(ByteCode_ptr, fd, index, nlines, buf, file_size);
                 return AsmErr;
             }
         }
     }  
-    //for (size_t i = 0; i < nlines * 2; i++)
-    //{
-    //    printf("[%lu] = %lg", i, (Processor -> CodeSegment)[i]);
-    //    getchar();
-    //}
     
     Processor -> IP = 0;
 
-    FreeIndex(&index, nlines);
-    FreeBuf(&buf, file_size);
+    FREEALL(ByteCode_ptr, fd, index, nlines, buf, file_size);
 
     return ASSEMBLY_SUCCESS;
 }
 
-AssemblyErr_t AssembleInstruct(const char *string, Processor_t *Processor, int *Labels)
+AssemblyErr_t AssembleInstruct(const char *string, Processor_t *Processor, int *Labels, size_t PassNum, FILE *ByteCode_ptr)
 {
     char InstructBuf[MAX_INSTRUCT_LEN] = {};
     char OperandBuf[MAX_INSTRUCT_LEN] = {};
@@ -104,7 +95,7 @@ AssemblyErr_t AssembleInstruct(const char *string, Processor_t *Processor, int *
         else 
             return SYNTAX_ERR;
     }
- 
+
     NumElems = sscanf(string, "%s %s", InstructBuf, OperandBuf);
 
     // инструкция без аргумента 
@@ -122,6 +113,8 @@ AssemblyErr_t AssembleInstruct(const char *string, Processor_t *Processor, int *
         }
         else
         {
+            if (PassNum == 2 && ByteCode_ptr)
+                fprintf(ByteCode_ptr, "%d\n", InstructNum);
             Processor -> CodeSegment[Processor -> IP] = (StackElem_t)InstructNum;
             Processor -> IP += 1;
             return ASSEMBLY_SUCCESS;
@@ -141,6 +134,9 @@ AssemblyErr_t AssembleInstruct(const char *string, Processor_t *Processor, int *
         {
             return SYNTAX_ERR;
         }
+        if (PassNum == 2 && ByteCode_ptr)
+            fprintf(ByteCode_ptr, "%d ", InstructNum);
+
         Processor -> CodeSegment[Processor -> IP] = (StackElem_t)InstructNum;
 
         // аргумент - метка
@@ -148,6 +144,10 @@ AssemblyErr_t AssembleInstruct(const char *string, Processor_t *Processor, int *
         {
             if (sscanf(OperandBuf, ":%d", &LabelNum) != 1)
                 return SYNTAX_ERR;
+             
+            if (PassNum == 2 && ByteCode_ptr)
+                fprintf(ByteCode_ptr, "%lg\n", (StackElem_t)Labels[LabelNum]);
+
             Processor -> CodeSegment[Processor -> IP + 1] = (StackElem_t)Labels[LabelNum];
             Processor -> IP += 2;
             return ASSEMBLY_SUCCESS;
@@ -158,28 +158,40 @@ AssemblyErr_t AssembleInstruct(const char *string, Processor_t *Processor, int *
         {
             char *EndPtr = POIZON_CHAR_PTR;
             InstructVal = strtod(OperandBuf, &EndPtr);
+
             // аргумент - регистр
             if (EndPtr == OperandBuf)
             {
                 if (InstructNum != PUSHr_num && InstructNum != POPr_num)
                     return SYNTAX_ERR;
+
                 RegNum = GetRegNum(OperandBuf);
                 if (RegNum == NUM_REGS)
                     return SYNTAX_ERR;
+
+                if (PassNum == 2 && ByteCode_ptr)
+                    fprintf(ByteCode_ptr, " %d\n", RegNum);
+
                 Processor -> CodeSegment[Processor -> IP + 1] = (StackElem_t)RegNum;
                 Processor -> IP += 2;
                 return ASSEMBLY_SUCCESS;
             }
+
             // аргумент - число
             else 
             {   
                 if (InstructNum == PUSHr_num || InstructNum == POPr_num)
                     return SYNTAX_ERR;
+                
+                if (PassNum == 2 && ByteCode_ptr)
+                    fprintf(ByteCode_ptr, " %lg\n", InstructVal);
+
                 Processor -> CodeSegment[Processor -> IP + 1] = InstructVal;
                 Processor -> IP += 2;
                 return ASSEMBLY_SUCCESS;
             }
         }
+
     // более 2 элементов в строке
     }
     else

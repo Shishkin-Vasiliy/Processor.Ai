@@ -7,6 +7,12 @@ int OpenFile(const char *file_name)
     return descr;
 }
 
+int CloseFile(int fd)
+{
+    int result = close(fd);
+    return result;
+}
+
 size_t GetFileSize(const char *file_name)
 {
     struct stat stat_buf = {};
