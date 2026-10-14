@@ -180,6 +180,27 @@ DisAssemblyErr_t DisAssembleInstruct(FILE *DisAsm_ptr, Processor_t *Processor)
             return DISASSEMBLY_SUCCESS;
         }
 
+        case IN_num:
+        {
+            fprintf(DisAsm_ptr, "IN\n");
+            Processor -> IP += 1;
+            return DISASSEMBLY_SUCCESS;
+        }
+
+        case CALL_num:
+        {
+            fprintf(DisAsm_ptr, "CALL\n");
+            Processor -> IP += 2;
+            return DISASSEMBLY_SUCCESS;
+        }
+
+        case RET_num:
+        {
+            fprintf(DisAsm_ptr, "RET\n");
+            Processor -> IP += 1;
+            return DISASSEMBLY_SUCCESS;
+        }
+
         case UNKNOWN_num:
             return DISASM_FAIL;
         

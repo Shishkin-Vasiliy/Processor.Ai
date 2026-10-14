@@ -1,54 +1,54 @@
 #include "Includes.h"
 #include "Stack.h"
 
-StackErr_t ResizeUp(Stack_t *stk)
+StackErr_t ResizeUp(Stack_t *DblStk)
 {
-    StackErr_t err = StackVerify(stk);
+    StackErr_t err = StackVerify(DblStk);
 
-    StackElem_t *temp = (StackElem_t *)realloc(stk -> buf, (stk -> capacity + 2) * sizeof(StackElem_t) * RESIZE_COEFF);
+    StackElem_t *temp = (StackElem_t *)realloc(DblStk -> buf, (DblStk -> capacity + 2) * sizeof(StackElem_t) * RESIZE_COEFF);
     if (temp)
     {
-        stk -> buf = temp;
-        stk -> data = temp + 1;
+        DblStk -> buf = temp;
+        DblStk -> data = temp + 1;
     }
 
-    err = StackVerify(stk);
+    err = StackVerify(DblStk);
     if (err)
         return err;
 
-    if (stk -> capacity * RESIZE_COEFF > STACK_MAX_CAPACITY)
+    if (DblStk -> capacity * RESIZE_COEFF > STACK_MAX_CAPACITY)
         return STACK_OVERFLOW;
     
-    stk -> capacity *= RESIZE_COEFF;
+    DblStk -> capacity *= RESIZE_COEFF;
     
-    for (size_t i = stk -> size; i < stk -> capacity; i++)
+    for (size_t i = DblStk -> size; i < DblStk -> capacity; i++)
     {
-        (stk -> data)[i] = POIZON_DBL;
+        (DblStk -> data)[i] = POIZON_DBL;
     } 
-    *(stk -> data + stk -> capacity) = CHICKEN_UPPER;
+    *(DblStk -> data + DblStk -> capacity) = CHICKEN_UPPER;
 
-    err = StackVerify(stk);
+    err = StackVerify(DblStk);
     return err;
 }
 
-StackErr_t ResizeDown(Stack_t *stk)
+StackErr_t ResizeDown(Stack_t *DblStk)
 {
-    StackErr_t err = StackVerify(stk);
+    StackErr_t err = StackVerify(DblStk);
 
-    StackElem_t *temp = (StackElem_t *)realloc(stk -> buf, (stk -> capacity + 2) * sizeof(StackElem_t) / RESIZE_COEFF);
+    StackElem_t *temp = (StackElem_t *)realloc(DblStk -> buf, (DblStk -> capacity + 2) * sizeof(StackElem_t) / RESIZE_COEFF);
     if (temp)
     {
-        stk -> buf = temp;
-        stk -> data = temp + 1;
+        DblStk -> buf = temp;
+        DblStk -> data = temp + 1;
     }
 
-    err = StackVerify(stk);
+    err = StackVerify(DblStk);
     if (err)
         return err;
  
-    stk -> capacity /= RESIZE_COEFF;
-    *(stk -> data + stk -> capacity + 1) = CHICKEN_UPPER;
+    DblStk -> capacity /= RESIZE_COEFF;
+    *(DblStk -> data + DblStk -> capacity + 1) = CHICKEN_UPPER;
 
-    err = StackVerify(stk);
+    err = StackVerify(DblStk);
     return err;
 }

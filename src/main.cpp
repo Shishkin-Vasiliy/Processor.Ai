@@ -16,10 +16,11 @@ int main(void)
         .DisAsm_file = "code.disasm"
     };
 
-    Stack_t stk = {};
+    Stack_t DblStk = {};
+    Stack_t RetStk = {};
 
     Processor_t Processor = {};
-    ProcessorInit(&stk, &Processor);
+    ProcessorInit(&DblStk, &RetStk, &Processor);
 
     AssemblyErr_t AsmErr = Assembly(AsmContext, &Processor);
     if (AsmErr)
@@ -27,9 +28,9 @@ int main(void)
 
     Processing(&Processor);
 
-    DisAssemblyErr_t DisAsmErr = DisAssembly(DisAsmContext, &Processor);
-    if (DisAsmErr)
-        printf("DisAsmErr = %d\n", DisAsmErr);
+    //DisAssemblyErr_t DisAsmErr = DisAssembly(DisAsmContext, &Processor);
+    //if (DisAsmErr)
+        //printf("DisAsmErr = %d\n", DisAsmErr);
 
     ProcessorDeinit(&Processor);
     return 0;

@@ -84,10 +84,11 @@ AssemblyErr_t AssembleInstruct(const char *string, Processor_t *Processor, int *
     int NumElems = 0;
     InstructNum_t InstructNum = UNKNOWN_num;
 
+    NumElems = sscanf(string, ":%d", &LabelNum);
+
     // обработка меток
     if (string[0] == ':')
     {
-        NumElems = sscanf(string, ":%d", &LabelNum);
         if (NumElems == 1)
         {
             Labels[LabelNum] = Processor -> IP;
@@ -108,7 +109,8 @@ AssemblyErr_t AssembleInstruct(const char *string, Processor_t *Processor, int *
         ||  (InstructNum == JMP_num)     || (InstructNum == JA_num) 
         ||  (InstructNum == JA_num)      || (InstructNum == JAE_num)
         ||  (InstructNum == JB_num)      || (InstructNum == JBE_num)
-        ||  (InstructNum == JE_num)      || (InstructNum == JNE_num))         
+        ||  (InstructNum == JE_num)      || (InstructNum == JNE_num)
+        ||  (InstructNum == CALL_num))         
         {
             return SYNTAX_ERR;
         }
@@ -131,7 +133,7 @@ AssemblyErr_t AssembleInstruct(const char *string, Processor_t *Processor, int *
         &&  (InstructNum != JMP_num)     && (InstructNum != JA_num)
         &&  (InstructNum != JAE_num)     && (InstructNum != JB_num)
         &&  (InstructNum != JBE_num)     && (InstructNum != JE_num)
-        &&  (InstructNum != JNE_num)))
+        &&  (InstructNum != JNE_num)     && (InstructNum != CALL_num)))
         {
             return SYNTAX_ERR;
         }
@@ -234,7 +236,13 @@ InstructNum_t GetInstructNum(const char *InstructBuf)
     else if (strcmp(InstructBuf, "JNE") == 0)
         return JNE_num;  
     else if (strcmp(InstructBuf, "OUT") == 0)
-        return OUT_num; 
+        return OUT_num;
+    else if (strcmp(InstructBuf, "IN") == 0)
+        return IN_num;
+    else if (strcmp(InstructBuf, "CALL") == 0)
+        return CALL_num;
+    else if (strcmp(InstructBuf, "RET") == 0)
+        return RET_num;
     else
         return UNKNOWN_num;
 }
@@ -276,3 +284,4 @@ void AssemblyErrMsg(AssemblyErr_t AsmErr, const char *Asm_file, size_t LineNum)
             ;
     }
 }
+

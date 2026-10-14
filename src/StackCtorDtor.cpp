@@ -1,7 +1,7 @@
 #include "Includes.h"
 #include "Stack.h"
 
-StackErr_t StackCTor(Stack_t *stk, size_t capacity
+StackErr_t StackCTor(Stack_t *DblStk, size_t capacity
                 ON_DBG(, const char *stack_name, const char *file_name, const char *func_name, int line, const char *time, const char *date))
 {
     printf("Initiating Stack\n");
@@ -15,53 +15,53 @@ StackErr_t StackCTor(Stack_t *stk, size_t capacity
         capacity = STACK_MAX_CAPACITY;
     }
 
-    StackErr_t err = StackIsEmpty(stk);
-    stk -> buf = (StackElem_t *) calloc(capacity + 2, sizeof(StackElem_t));
-    stk -> data = stk -> buf + 1; 
+    StackErr_t err = StackIsEmpty(DblStk);
+    DblStk -> buf = (StackElem_t *) calloc(capacity + 2, sizeof(StackElem_t));
+    DblStk -> data = DblStk -> buf + 1; 
 
-    *(stk -> buf) = CHICKEN_LOWER;
-    *(stk -> buf + capacity + 1) = CHICKEN_UPPER;
+    *(DblStk -> buf) = CHICKEN_LOWER;
+    *(DblStk -> buf + capacity + 1) = CHICKEN_UPPER;
 
-    stk -> capacity = capacity;
+    DblStk -> capacity = capacity;
     
-    stk -> chicken_left = CHICKEN_LEFT;
-    stk -> chicken_right = CHICKEN_RIGHT;
+    DblStk -> chicken_left = CHICKEN_LEFT;
+    DblStk -> chicken_right = CHICKEN_RIGHT;
     
-    err = StackVerify(stk);
+    err = StackVerify(DblStk);
 
-    ON_DBG (stk -> stack_name = stack_name;
-            stk -> file_name = file_name;
-            stk -> func_name = func_name;
-            stk -> line = line;
-            stk -> time = time;
-            stk -> date = date;)
+    ON_DBG (DblStk -> stack_name = stack_name;
+            DblStk -> file_name = file_name;
+            DblStk -> func_name = func_name;
+            DblStk -> line = line;
+            DblStk -> time = time;
+            DblStk -> date = date;)
 
-    for (size_t i = 0; i < (stk -> capacity); i++)
+    for (size_t i = 0; i < (DblStk -> capacity); i++)
     {
-        (stk -> data)[i] = POIZON_DBL;
+        (DblStk -> data)[i] = POIZON_DBL;
     }
-    StackDump(stk);
+    StackDump(DblStk);
     return err;
 }
 
-StackErr_t StackDTor(Stack_t *stk)
+StackErr_t StackDTor(Stack_t *DblStk)
 {
-    StackErr_t err = StackVerify(stk);
+    StackErr_t err = StackVerify(DblStk);
 
     if (err)
         return err;
 
     printf("Destroying Stack\n");
-    StackDump(stk);
+    StackDump(DblStk);
 
-    for (size_t i = 0; i < stk -> capacity + 2; i++)
+    for (size_t i = 0; i < DblStk -> capacity + 2; i++)
     {
-        (stk -> buf)[i] = POIZON_DBL;
+        (DblStk -> buf)[i] = POIZON_DBL;
     }
 
-    free(stk -> buf);
-    stk -> buf = POIZON_BUF_PTR;
-    stk -> data = POIZON_DATA_PTR;
+    free(DblStk -> buf);
+    DblStk -> buf = POIZON_BUF_PTR;
+    DblStk -> data = POIZON_DATA_PTR;
 
     return STACK_OK;
 }

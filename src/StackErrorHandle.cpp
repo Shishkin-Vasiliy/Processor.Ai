@@ -1,23 +1,23 @@
 #include "Includes.h"
 #include "Stack.h"
 
-StackErr_t StackVerify(Stack_t *stk)
+StackErr_t StackVerify(Stack_t *DblStk)
 {
     #ifdef STACK_DEBUG
 
-    if ((!stk) || !(stk -> buf))
+    if ((!DblStk) || !(DblStk -> buf))
         return STACK_BAD_PTR;
 
-    StackErr_t err = StackStructChickenCheck(stk);
+    StackErr_t err = StackStructChickenCheck(DblStk);
     if (err)
         return err;
 
-    err = StackDataChickenCheck(stk);
+    err = StackDataChickenCheck(DblStk);
     if (err)
         return err;
 
-    size_t size = stk -> size;
-    size_t capacity = stk -> capacity;
+    size_t size = DblStk -> size;
+    size_t capacity = DblStk -> capacity;
 
     if (size > capacity)
         return STACK_BAD_SIZE;
@@ -39,41 +39,41 @@ int DblCmp(StackElem_t a, StackElem_t b)
         return -1;
 }
 
-StackErr_t StackStructChickenCheck(Stack_t *stk)
+StackErr_t StackStructChickenCheck(Stack_t *DblStk)
 {
-    if (stk -> chicken_left != CHICKEN_LEFT) 
+    if (DblStk -> chicken_left != CHICKEN_LEFT) 
         return STACK_STRUCT_LEFT_CHICKEN_ATTACKED;
-    else if (stk -> chicken_right != CHICKEN_RIGHT)
+    else if (DblStk -> chicken_right != CHICKEN_RIGHT)
         return STACK_STRUCT_RIGHT_CHICKEN_ATTACKED;
     else
         return STACK_OK;
 }
 
-StackErr_t StackDataChickenCheck(Stack_t *stk)
+StackErr_t StackDataChickenCheck(Stack_t *DblStk)
 {
-    size_t capacity = stk -> capacity;
+    size_t capacity = DblStk -> capacity;
 
-    if (DblCmp(*(stk -> buf), CHICKEN_LOWER) != 0 || isnan(*(stk -> buf)))
+    if (DblCmp(*(DblStk -> buf), CHICKEN_LOWER) != 0 || isnan(*(DblStk -> buf)))
         return STACK_DATA_LOWER_CHICKEN_ATTACKED;
-    else if (DblCmp(*(stk -> buf + capacity + 1), CHICKEN_UPPER) != 0 || isnan(*(stk -> buf + capacity + 1)))
+    else if (DblCmp(*(DblStk -> buf + capacity + 1), CHICKEN_UPPER) != 0 || isnan(*(DblStk -> buf + capacity + 1)))
         return STACK_DATA_UPPER_CHICKEN_ATTACKED;
     else
         return STACK_OK;
 }
 
-StackErr_t StackIsEmpty(Stack_t *stk)
+StackErr_t StackIsEmpty(Stack_t *DblStk)
 {
     #ifdef STACK_DEBUG
 
-    if (!stk)   
+    if (!DblStk)   
         return STACK_BAD_PTR;
     
-    StackErr_t err = StackStructChickenCheck(stk);
+    StackErr_t err = StackStructChickenCheck(DblStk);
     if (err)
         return err;
 
-    size_t size = stk -> size;
-    size_t capacity = stk -> capacity;
+    size_t size = DblStk -> size;
+    size_t capacity = DblStk -> capacity;
     
     if (size != 0 && capacity != 0)
         return EMPTY_STACK_BAD_SIZE;
@@ -86,29 +86,29 @@ StackErr_t StackIsEmpty(Stack_t *stk)
 }
 
 
-void StackDump(Stack_t *stk)
+void StackDump(Stack_t *DblStk)
 {
     #ifdef STACK_DEBUG
 
     const char *dump_file_name = "dump.txt";
     FILE *dump_file_ptr = fopen(dump_file_name, "w");
 
-    const char *name = stk -> stack_name;
-    StackElem_t *buf = stk -> buf;
-    StackElem_t *data = stk -> data;
-    const char *func = stk -> func_name;
-    const char *file = stk -> file_name;
-    int line = stk -> line;
-    const char *time = stk -> time;
-    const char *date = stk -> date;
-    size_t capacity = stk -> capacity;
-    size_t size = stk -> size;
-    unsigned long long chicken_left = stk -> chicken_left;
-    unsigned long long chicken_right = stk -> chicken_right;
+    const char *name = DblStk -> stack_name;
+    StackElem_t *buf = DblStk -> buf;
+    StackElem_t *data = DblStk -> data;
+    const char *func = DblStk -> func_name;
+    const char *file = DblStk -> file_name;
+    int line = DblStk -> line;
+    const char *time = DblStk -> time;
+    const char *date = DblStk -> date;
+    size_t capacity = DblStk -> capacity;
+    size_t size = DblStk -> size;
+    unsigned long long chicken_left = DblStk -> chicken_left;
+    unsigned long long chicken_right = DblStk -> chicken_right;
 
     fprintf(dump_file_ptr, "STACK_DUMP\n");
     fprintf(dump_file_ptr, "****************************************\n");
-    fprintf(dump_file_ptr, "Stack_t <%s> [%p], %s at %s: %d\n", name, stk, func, file, line);
+    fprintf(dump_file_ptr, "Stack_t <%s> [%p], %s at %s: %d\n", name, DblStk, func, file, line);
     fprintf(dump_file_ptr, "Created at %s on %s\n", time, date);
     fprintf(dump_file_ptr, "{\n");
     fprintf(dump_file_ptr, "chicken_left = %llX\n", chicken_left);

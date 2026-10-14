@@ -50,24 +50,24 @@ enum StackErr_t {
     STACK_OVERFLOW                      // стек переполнен, невозможно выполнить push()
 };
 
-StackErr_t StackCTor(Stack_t *stk, size_t capacity
+StackErr_t StackCTor(Stack_t *DblStk, size_t capacity
                 ON_DBG(, const char *stack_name, const char *file_name, const char *func_name, int line, const char *time, const char *date));
-StackErr_t StackChickenCheck(Stack_t *stk);
-StackErr_t StackIsEmpty(Stack_t *stk);                
-StackErr_t StackVerify(Stack_t *stk);
-void StackDump(Stack_t *stk);
+StackErr_t StackChickenCheck(Stack_t *DblStk);
+StackErr_t StackIsEmpty(Stack_t *DblStk);                
+StackErr_t StackVerify(Stack_t *DblStk);
+void StackDump(Stack_t *DblStk);
 void StackErrMsg(StackErr_t err);
-StackErr_t StackPush(Stack_t *stk, StackElem_t value);
-StackErr_t StackPop(Stack_t *stk, StackElem_t *ptr);
-StackErr_t StackDTor(Stack_t *stk);
-StackErr_t ResizeUp(Stack_t *stk);
-StackErr_t ResizeDown(Stack_t *stk);
-StackErr_t StackStructChickenCheck(Stack_t *stk);
-StackErr_t StackDataChickenCheck(Stack_t *stk);
+StackErr_t StackPush(Stack_t *DblStk, StackElem_t value);
+StackErr_t StackPop(Stack_t *DblStk, StackElem_t *ptr);
+StackErr_t StackDTor(Stack_t *DblStk);
+StackErr_t ResizeUp(Stack_t *DblStk);
+StackErr_t ResizeDown(Stack_t *DblStk);
+StackErr_t StackStructChickenCheck(Stack_t *DblStk);
+StackErr_t StackDataChickenCheck(Stack_t *DblStk);
 int DblCmp(StackElem_t a, StackElem_t b);
 
-#define STACK_CTOR(stk, capacity) (StackCTor(&(stk), (capacity) \
-                                    ON_DBG(, #stk,              \
+#define STACK_CTOR(DblStk, capacity) (StackCTor(&(DblStk), (capacity) \
+                                    ON_DBG(, #DblStk,              \
                                             __FILE__,           \
                                             __func__,           \
                                             __LINE__,           \
@@ -76,18 +76,18 @@ int DblCmp(StackElem_t a, StackElem_t b);
 
 
 #ifdef STACK_DEBUG
-#define ERROR_MSG(stk, err)     \
+#define ERROR_MSG(DblStk, err)     \
 do                              \
 {                               \
     if (err)                    \
     {                           \
         StackErrMsg(err);   \
-        StackDump(stk);         \
+        StackDump(DblStk);         \
     }                           \
 } while (0) 
 
 #else
-#define ERROR_MSG(stk, err)     \
+#define ERROR_MSG(DblStk, err)     \
 do                              \
 {                               \
     if (err)                    \

@@ -30,6 +30,9 @@ enum InstructNum_t {
     JE_num = 14,
     JNE_num = 15,
     OUT_num = 16,
+    IN_num = 17,
+    CALL_num = 18,
+    RET_num = 19,
     UNKNOWN_num
 };
 
@@ -42,7 +45,8 @@ enum REGS {
 };
 
 struct Processor_t {
-    Stack_t *stk;
+    Stack_t *DblStk;
+    Stack_t *RetStk;
     StackElem_t *CodeSegment;
     int IP;
     StackElem_t Regs[NUM_REGS];
@@ -51,7 +55,7 @@ struct Processor_t {
 ProcessingErr_t Processing(Processor_t *Processor);
 ProcessingErr_t RunInstruct(Processor_t *Processor);
 void ProcessingErrMsg(ProcessingErr_t err);
-void ProcessorInit(Stack_t *stk, Processor_t *Processor);
+void ProcessorInit(Stack_t *DblStk, Stack_t *RetStk, Processor_t *Processor);
 void ProcessorDeinit(Processor_t *Processor);
 
 ProcessingErr_t HLT(Processor_t *Processor);
@@ -71,5 +75,8 @@ ProcessingErr_t JBE(Processor_t *Processor);
 ProcessingErr_t JE(Processor_t *Processor);
 ProcessingErr_t JNE(Processor_t *Processor);
 ProcessingErr_t OUT(Processor_t *Processor);
+ProcessingErr_t IN(Processor_t *Processor);
+ProcessingErr_t CALL(Processor_t *Processor);
+ProcessingErr_t RET(Processor_t *Processor);
 
 #endif
