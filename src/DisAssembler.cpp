@@ -8,29 +8,17 @@ DisAssemblyErr_t DisAssembly(DisAsmContext_t DisAsmContext, Processor_t *Process
     const char *DisAsm_file = DisAsmContext.DisAsm_file;
     FILE *DisAsm_ptr = fopen(DisAsm_file, "w");
 
+    printf("CODELEN = %d\n", Processor -> CodeLen);
+
     DisAssemblyErr_t DisAsmErr = DISASSEMBLY_SUCCESS;
-    while (1) 
-    {
-        if ((InstructNum_t)((Processor -> CodeSegment)[Processor -> IP]) == HLT_num)
+    while (Processor -> IP < Processor -> CodeLen) 
+    { 
+        DisAsmErr = DisAssembleInstruct(DisAsm_ptr, Processor);
+        if (DisAsmErr)
         {
-            DisAsmErr = DisAssembleInstruct(DisAsm_ptr, Processor);
-            if (DisAsmErr)
-            {
-                if (DisAsm_ptr)
-                    fclose(DisAsm_ptr);
-                return DisAsmErr;
-            }
-            break;
-        }
-        else
-        { 
-            DisAsmErr = DisAssembleInstruct(DisAsm_ptr, Processor);
-            if (DisAsmErr)
-            {
-                if (DisAsm_ptr)
-                    fclose(DisAsm_ptr);
-                return DisAsmErr;
-            }
+            if (DisAsm_ptr)
+                fclose(DisAsm_ptr);
+            return DisAsmErr;
         }
     } 
 
@@ -55,6 +43,7 @@ DisAssemblyErr_t DisAssembleInstruct(FILE *DisAsm_ptr, Processor_t *Processor)
         case HLT_num:
         {
             fprintf(DisAsm_ptr, "HLT\n");
+            Processor -> IP += 1;
             return DISASSEMBLY_SUCCESS;
         }
         
@@ -189,7 +178,8 @@ DisAssemblyErr_t DisAssembleInstruct(FILE *DisAsm_ptr, Processor_t *Processor)
 
         case CALL_num:
         {
-            fprintf(DisAsm_ptr, "CALL\n");
+            int CallPos = (int)(Processor -> CodeSegment)[Processor -> IP + 1];
+            fprintf(DisAsm_ptr, "CALL %d\n", CallPos);
             Processor -> IP += 2;
             return DISASSEMBLY_SUCCESS;
         }

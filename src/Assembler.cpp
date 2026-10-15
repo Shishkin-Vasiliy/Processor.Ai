@@ -46,7 +46,9 @@ AssemblyErr_t Assembly(AsmContext_t AsmContext, Processor_t *Processor)
     }
 
     AssemblyErr_t AsmErr = ASSEMBLY_SUCCESS;
+
     static int Labels[MAX_LABELS] = {};
+
     for (size_t i = 0; i < MAX_LABELS; i++)
         Labels[i] = -1;
 
@@ -66,7 +68,9 @@ AssemblyErr_t Assembly(AsmContext_t AsmContext, Processor_t *Processor)
             }
         }
     }  
-    
+    printf("IP = %d\n", Processor -> IP);
+    Processor -> CodeLen = Processor -> IP;    ///////////////////// 
+
     Processor -> IP = 0;
 
     FREEALL(ByteCode_ptr, fd, index, nlines, buf, file_size);
@@ -78,19 +82,21 @@ AssemblyErr_t AssembleInstruct(const char *string, Processor_t *Processor, int *
 {
     char InstructBuf[MAX_INSTRUCT_LEN] = {};
     char OperandBuf[MAX_INSTRUCT_LEN] = {};
+    char LabelBuf[MAX_INSTRUCT_LEN] = {};
     StackElem_t InstructVal = 0;
     REGS RegNum = NUM_REGS;
     int LabelNum = 0;
     int NumElems = 0;
     InstructNum_t InstructNum = UNKNOWN_num;
 
-    NumElems = sscanf(string, ":%d", &LabelNum);
+    NumElems = sscanf(string, ":%s", LabelBuf);
 
     // обработка меток
     if (string[0] == ':')
     {
         if (NumElems == 1)
         {
+            LabelNum = HashString(LabelBuf);
             Labels[LabelNum] = Processor -> IP;
             return ASSEMBLY_SUCCESS;
         }
@@ -145,9 +151,11 @@ AssemblyErr_t AssembleInstruct(const char *string, Processor_t *Processor, int *
         // аргумент - метка
         if (OperandBuf[0] == ':')
         {
-            if (sscanf(OperandBuf, ":%d", &LabelNum) != 1)
+            if (sscanf(OperandBuf, ":%s", LabelBuf) != 1)
                 return SYNTAX_ERR;
-             
+            
+            LabelNum = HashString(LabelBuf);    
+
             if (PassNum == 2 && ByteCode_ptr)
                 fprintf(ByteCode_ptr, "%lg\n", (StackElem_t)Labels[LabelNum]);
 
@@ -193,12 +201,26 @@ AssemblyErr_t AssembleInstruct(const char *string, Processor_t *Processor, int *
                 Processor -> IP += 2;
                 return ASSEMBLY_SUCCESS;
             }
-        }
-
-    // более 2 элементов в строке
+        }    
     }
+    // более 2 элементов в строке
+
     else
         return SYNTAX_ERR;
+}
+
+int HashString(char *LabelBuf)
+{
+    int i = 0;
+    unsigned int Hash = 0;
+    int p = 31;
+
+    for (; LabelBuf[i] != '\0'; i++)
+    {
+        Hash = Hash * p + LabelBuf[i];
+    }
+
+    return (int) (Hash % MAX_LABELS);
 }
 
 InstructNum_t GetInstructNum(const char *InstructBuf)
@@ -282,6 +304,10 @@ void AssemblyErrMsg(AssemblyErr_t AsmErr, const char *Asm_file, size_t LineNum)
 
         default:
             ;
-    }
+    } 
 }
+
+
+
+
 

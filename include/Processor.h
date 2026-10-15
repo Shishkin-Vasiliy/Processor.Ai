@@ -6,7 +6,6 @@
 enum ProcessingErr_t {
     PROCESSING_OK,
     STACK_CORRUPTED,
-    HLT_INSTRUCT,
     UNKNOWN_INSTRUCT,
     INVALID_OPERAND,
     SEGMENTATION_FAULT
@@ -49,6 +48,7 @@ struct Processor_t {
     Stack_t *RetStk;
     StackElem_t *CodeSegment;
     int IP;
+    int CodeLen;
     StackElem_t Regs[NUM_REGS];
 };
 
@@ -57,6 +57,8 @@ ProcessingErr_t RunInstruct(Processor_t *Processor);
 void ProcessingErrMsg(ProcessingErr_t err);
 void ProcessorInit(Stack_t *DblStk, Stack_t *RetStk, Processor_t *Processor);
 void ProcessorDeinit(Processor_t *Processor);
+void ProcessorDump(Processor_t *Processor);
+int GetWindowStart(int CodeLen, const int WindowSize, int IP);
 
 ProcessingErr_t HLT(Processor_t *Processor);
 ProcessingErr_t PUSH(Processor_t *Processor);

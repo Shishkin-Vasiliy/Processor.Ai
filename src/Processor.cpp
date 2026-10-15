@@ -54,14 +54,20 @@ ProcessingErr_t Processing(Processor_t *Processor)
 {
     StackElem_t *CodeSegment = Processor -> CodeSegment;
 
-    while ((InstructNum_t)CodeSegment[Processor -> IP] != HLT_num)
+    while (Processor -> IP < Processor -> CodeLen)
     {   
+        InstructNum_t InstructNum = (InstructNum_t)(Processor -> CodeSegment[Processor -> IP]);
+        ProcessorDump(Processor);
+        getchar();
         ProcessingErr_t err = RunInstruct(Processor);
+
         if (err)
         {
             ProcessingErrMsg(err);
             return err;
         }
+        if (InstructNum == HLT_num)
+            break;
     }
     Processor -> IP = 0;
     return PROCESSING_OK;
@@ -70,7 +76,7 @@ ProcessingErr_t Processing(Processor_t *Processor)
 ProcessingErr_t RunInstruct(Processor_t *Processor)
 {
     int IP = Processor -> IP;
-    if (IP < 0)
+    if (IP < 0 || IP >= Processor -> CodeLen)
         return SEGMENTATION_FAULT;
 
     ProcessingErr_t err = InstructionTable[(int)((Processor -> CodeSegment)[IP])](Processor); 
@@ -82,7 +88,8 @@ ProcessingErr_t RunInstruct(Processor_t *Processor)
 
 ProcessingErr_t HLT(Processor_t *Processor)
 {
-    return HLT_INSTRUCT;
+    Processor -> IP += 1;
+    return PROCESSING_OK;
 }
 
 ProcessingErr_t PUSH(Processor_t *Processor)
@@ -501,7 +508,7 @@ ProcessingErr_t CALL(Processor_t *Processor)
     ProcessingErr_t JmpErr = JMP(Processor);
     if (JmpErr)
         return JmpErr;
-        
+
     return PROCESSING_OK;
 }
 
@@ -533,9 +540,6 @@ void ProcessingErrMsg(ProcessingErr_t err)
             printf("Processing Error: Unknown Instruct\n");
             break;
 
-        case HLT_INSTRUCT:
-            break;
-
         case INVALID_OPERAND:
             printf("Processing Error: Invalid Operand\n");
             break;
@@ -547,4 +551,41 @@ void ProcessingErrMsg(ProcessingErr_t err)
         default:
             ;
     }
+}
+
+void ProcessorDump(Processor_t *Processor)
+{
+    const int WindowSize = 28;
+    int IP = Processor -> IP;
+    int CodeLen = Processor -> CodeLen;
+
+    int start = GetWindowStart(CodeLen, WindowSize, IP);
+
+    printf("CODE SEGMENT DUMP\n");
+    printf("*************************\n");
+    for (int i = start; i < start + WindowSize && i < CodeLen; i++)
+    {
+        printf("[%d] = %lg", i, Processor -> CodeSegment[i]);
+        if (i == IP)
+            printf(" <");
+        printf("\n");
+    }
+}
+
+int GetWindowStart(int CodeLen, const int WindowSize, int IP)
+{
+    if (CodeLen < WindowSize)
+        return 0;
+
+    int HalfWindow = WindowSize / 2;
+
+    int start = IP - HalfWindow;
+
+    if (start < 0)  
+        return 0;
+
+    if (start > CodeLen - WindowSize)
+        return CodeLen - WindowSize;
+
+    return start;
 }

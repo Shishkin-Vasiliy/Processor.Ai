@@ -28,9 +28,9 @@ int main(void)
 
     Processing(&Processor);
 
-    //DisAssemblyErr_t DisAsmErr = DisAssembly(DisAsmContext, &Processor);
-    //if (DisAsmErr)
-        //printf("DisAsmErr = %d\n", DisAsmErr);
+    DisAssemblyErr_t DisAsmErr = DisAssembly(DisAsmContext, &Processor);
+    if (DisAsmErr)
+        printf("DisAsmErr = %d\n", DisAsmErr);
 
     ProcessorDeinit(&Processor);
     return 0;

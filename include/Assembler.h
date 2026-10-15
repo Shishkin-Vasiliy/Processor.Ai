@@ -2,13 +2,13 @@
 #define ASM_H
 
 #define MAX_INSTRUCT_LEN 100
-#define MAX_LABELS 10
+#define MAX_LABELS 13
 
 enum AssemblyErr_t {
     ASSEMBLY_SUCCESS = 0,
     SYNTAX_ERR,
     BAD_CODESEG_PTR,
-    BAD_INDEX_PTR
+    BAD_INDEX_PTR,
 };
 
 struct AsmContext_t {
@@ -21,5 +21,6 @@ AssemblyErr_t AssembleInstruct(const char *string, Processor_t *Processor, int *
 InstructNum_t GetInstructNum(const char *InstructBuf);
 REGS GetRegNum(const char *OperandBuf);
 void AssemblyErrMsg(AssemblyErr_t AsmErr, const char *Asm_file, size_t LineNum);
+int HashString(char *LabelBuf);
 
 #endif

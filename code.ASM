@@ -4,11 +4,11 @@ IN
 POPr RBX
 PUSHr RAX
 PUSHr RBX
-CALL :3
+CALL :func
 PUSHr RAX
 OUT 
 HLT
-:3
+:func
 ADD
 POPr RAX
 RET
