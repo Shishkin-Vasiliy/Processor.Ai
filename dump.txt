@@ -1,7 +1,7 @@
 STACK_DUMP
 ****************************************
-Stack_t <*RetStk> [0x72e675800140], ProcessorInit at src/Processor.cpp: 33
-Created at 12:21:10 on Oct 15 2026
+Stack_t <*RetStk> [0x76652c400140], ProcessorInit at src/Processor.cpp: 33
+Created at 23:56:29 on Oct 15 2026
 {
 chicken_left = DEADDEAD
 chicken_left = D01B0EB

@@ -2,7 +2,7 @@
 #define ASM_H
 
 #define MAX_INSTRUCT_LEN 100
-#define MAX_LABELS 13
+#define MAX_LABELS 503
 
 enum AssemblyErr_t {
     ASSEMBLY_SUCCESS = 0,
@@ -22,5 +22,6 @@ InstructNum_t GetInstructNum(const char *InstructBuf);
 REGS GetRegNum(const char *OperandBuf);
 void AssemblyErrMsg(AssemblyErr_t AsmErr, const char *Asm_file, size_t LineNum);
 int HashString(char *LabelBuf);
+AssemblyErr_t ClearComments(const char *string);
 
 #endif

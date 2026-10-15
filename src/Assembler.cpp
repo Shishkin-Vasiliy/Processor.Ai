@@ -62,14 +62,14 @@ AssemblyErr_t Assembly(AsmContext_t AsmContext, Processor_t *Processor)
             AsmErr = AssembleInstruct(index[i], Processor, Labels, N, ByteCode_ptr);
             if (AsmErr)
             {
-                AssemblyErrMsg(AsmErr, Asm_file, i);
+                AssemblyErrMsg(AsmErr, Asm_file, i + 1);
                 FREEALL(ByteCode_ptr, fd, index, nlines, buf, file_size);
                 return AsmErr;
             }
         }
     }  
-    printf("IP = %d\n", Processor -> IP);
-    Processor -> CodeLen = Processor -> IP;    ///////////////////// 
+    
+    Processor -> CodeLen = Processor -> IP;    
 
     Processor -> IP = 0;
 
@@ -131,7 +131,7 @@ AssemblyErr_t AssembleInstruct(const char *string, Processor_t *Processor, int *
     }
 
     // инструкция с аргументом
-    else if (NumElems == 2)
+    else if (NumElems > 1)
     {
         InstructNum = GetInstructNum(InstructBuf);
         if ((InstructNum == UNKNOWN_num) || ((InstructNum != PUSH_num)
@@ -203,7 +203,6 @@ AssemblyErr_t AssembleInstruct(const char *string, Processor_t *Processor, int *
             }
         }    
     }
-    // более 2 элементов в строке
 
     else
         return SYNTAX_ERR;
@@ -306,7 +305,6 @@ void AssemblyErrMsg(AssemblyErr_t AsmErr, const char *Asm_file, size_t LineNum)
             ;
     } 
 }
-
 
 
 

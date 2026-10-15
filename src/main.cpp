@@ -5,12 +5,15 @@
 #include "Assembler.h"
 #include "DisAssembler.h"
 
-int main(void)
+int main(int argc, char **argv)
 {
     AsmContext_t AsmContext = {
     .Asm_file = "code.asm",
     .ByteCode_file = "code.txt"
     };
+
+    if (argc == 2)
+        AsmContext.Asm_file = argv[1];
 
     DisAsmContext_t DisAsmContext = {
         .DisAsm_file = "code.disasm"
