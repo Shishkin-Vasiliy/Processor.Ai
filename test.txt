@@ -1,0 +1,21 @@
+IN
+CALL :factorial
+OUT 
+HLT
+
+:factorial
+POPr RAX
+PUSHr RAX
+PUSH 1       
+JA :recursion
+PUSH 1
+RET
+; ashdsfajslfj;s
+:recursion
+PUSHr RAX
+PUSHr RAX
+PUSH 1
+SUB
+CALL :factorial
+MUL
+RET

@@ -1,0 +1,4 @@
+PUSH 3
+POPm [RBX]
+PUSHm [RBX]
+OUT

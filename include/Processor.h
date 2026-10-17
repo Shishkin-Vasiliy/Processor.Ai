@@ -2,6 +2,7 @@
 #define PROCESSOR_H
 
 #define POIZON_CODESEG_PTR ((StackElem_t *)222)
+#define RAM_SIZE 100
 
 enum ProcessingErr_t {
     PROCESSING_OK,
@@ -32,6 +33,8 @@ enum InstructNum_t {
     IN_num = 17,
     CALL_num = 18,
     RET_num = 19,
+    PUSHm_num = 20,
+    POPm_num = 21,
     UNKNOWN_num
 };
 
@@ -49,7 +52,8 @@ struct Processor_t {
     StackElem_t *CodeSegment;
     int IP;
     int CodeLen;
-    StackElem_t Regs[NUM_REGS];
+    StackElem_t Regs[NUM_REGS]; 
+    StackElem_t *RAM;          ///// TODO initialize with calloc
 };
 
 ProcessingErr_t Processing(Processor_t *Processor);
@@ -80,5 +84,7 @@ ProcessingErr_t OUT(Processor_t *Processor);
 ProcessingErr_t IN(Processor_t *Processor);
 ProcessingErr_t CALL(Processor_t *Processor);
 ProcessingErr_t RET(Processor_t *Processor);
+ProcessingErr_t PUSHm(Processor_t *Processor);
+ProcessingErr_t POPm(Processor_t *Processor);
 
 #endif

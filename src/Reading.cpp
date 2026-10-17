@@ -63,11 +63,15 @@ size_t SplitBuf(char **buf, char **index)
             *temp = '\0';
             temp++;
             i++;
-            nlines++;
-            //while(isspace(*temp))          ///////  возможно тут проблема с пустыми строками (их лучше записывать и не пропускать)
-            //    temp++;  
+            nlines++; 
             index[i] = temp;
             continue;
+        }
+        else if (*temp == ';')
+        {
+            *temp = '\0';
+            while (*temp != '\n')
+                temp++;
         }
         else
             temp++;            

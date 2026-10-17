@@ -7,15 +7,15 @@
 
 int main(int argc, char **argv)
 {
-    AsmContext_t AsmContext = {
+    Asm_files Asm_Files = {
     .Asm_file = "code.asm",
     .ByteCode_file = "code.txt"
     };
 
     if (argc == 2)
-        AsmContext.Asm_file = argv[1];
+        Asm_Files.Asm_file = argv[1];
 
-    DisAsmContext_t DisAsmContext = {
+    DisAsm_files DisAsm_Files = {
         .DisAsm_file = "code.disasm"
     };
 
@@ -25,15 +25,15 @@ int main(int argc, char **argv)
     Processor_t Processor = {};
     ProcessorInit(&DblStk, &RetStk, &Processor);
 
-    AssemblyErr_t AsmErr = Assembly(AsmContext, &Processor);
+    AssemblyErr_t AsmErr = Assembly(Asm_Files, &Processor);
     if (AsmErr)
         printf("AsmErr = <%d>\n", AsmErr);
 
     Processing(&Processor);
 
-    DisAssemblyErr_t DisAsmErr = DisAssembly(DisAsmContext, &Processor);
-    if (DisAsmErr)
-        printf("DisAsmErr = %d\n", DisAsmErr);
+    //DisAssemblyErr_t DisAsmErr = DisAssembly(DisAsm_Files, &Processor);
+    //if (DisAsmErr)
+    //    printf("DisAsmErr = %d\n", DisAsmErr);
 
     ProcessorDeinit(&Processor);
     return 0;

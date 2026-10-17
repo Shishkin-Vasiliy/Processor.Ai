@@ -24,7 +24,9 @@ static const Instruct InstructionTable[] = {
     OUT,
     IN,
     CALL,
-    RET
+    RET,
+    PUSHm,
+    POPm
 };
 
 void ProcessorInit(Stack_t *DblStk, Stack_t *RetStk, Processor_t *Processor)
@@ -34,7 +36,12 @@ void ProcessorInit(Stack_t *DblStk, Stack_t *RetStk, Processor_t *Processor)
     Processor -> DblStk = DblStk;
     Processor -> RetStk = RetStk;
     Processor -> CodeSegment = POIZON_CODESEG_PTR;
+    Processor -> CodeLen = 0;
     Processor -> IP = 0;
+    Processor -> RAM = (StackElem_t *)calloc(RAM_SIZE, sizeof(StackElem_t));
+    if (!Processor -> RAM)
+        return;
+    printf("ram calloc success\n");
     for (size_t i = 0; i < NUM_REGS; i++)
         Processor -> Regs[i] = 0;
 }
@@ -46,8 +53,11 @@ void ProcessorDeinit(Processor_t *Processor)
     free(Processor -> CodeSegment);
     Processor -> CodeSegment = POIZON_CODESEG_PTR;
     Processor -> IP = 0;
+    for (size_t i = 0; i < RAM_SIZE; i++)
+        Processor -> RAM[i] = POIZON_DBL;
+    free(Processor -> RAM);
     for (size_t RegNum = 0; RegNum < NUM_REGS; RegNum++)
-        Processor -> Regs[RegNum] = 0;
+        Processor -> Regs[RegNum] = POIZON_DBL;
 }
 
 ProcessingErr_t Processing(Processor_t *Processor)
@@ -79,6 +89,11 @@ ProcessingErr_t RunInstruct(Processor_t *Processor)
     if (IP < 0 || IP >= Processor -> CodeLen)
         return SEGMENTATION_FAULT;
 
+    if ((int)((Processor -> CodeSegment)[IP]) < 0 || (int)((Processor -> CodeSegment)[IP]) == UNKNOWN_num)
+    {
+        printf("UNKONWN_num\n");
+        return SEGMENTATION_FAULT;
+    }
     ProcessingErr_t err = InstructionTable[(int)((Processor -> CodeSegment)[IP])](Processor); 
     if (err)
         return err;
@@ -525,6 +540,32 @@ ProcessingErr_t RET(Processor_t *Processor)
     return PROCESSING_OK;
 }
 
+ProcessingErr_t PUSHm(Processor_t *Processor)
+{
+    StackElem_t val = (Processor -> RAM)[(int)(Processor -> CodeSegment[Processor -> IP + 1])];
+    StackErr_t StkErr = StackPush(Processor -> DblStk, val);
+    if (StkErr)
+    {
+        printf("StackError = %d\n", StkErr);
+        return STACK_CORRUPTED;
+    }
+    Processor -> IP += 2;
+    return PROCESSING_OK;
+}
+ 
+ProcessingErr_t POPm(Processor_t *Processor)
+{
+    int index = (int)(Processor -> CodeSegment[Processor -> IP + 1]);
+    StackErr_t StkErr = StackPop(Processor -> DblStk, Processor -> RAM + index);
+    if (StkErr)
+    {
+        printf("StackError = %d\n", StkErr);
+        return STACK_CORRUPTED;
+    }
+    Processor -> IP += 2;
+    return PROCESSING_OK;
+}
+
 void ProcessingErrMsg(ProcessingErr_t err)
 {
     switch(err)
@@ -555,7 +596,7 @@ void ProcessingErrMsg(ProcessingErr_t err)
 
 void ProcessorDump(Processor_t *Processor)
 {
-    const int WindowSize = 28;
+    const int WindowSize = 30;
     int IP = Processor -> IP;
     int CodeLen = Processor -> CodeLen;
 

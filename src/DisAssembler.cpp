@@ -3,9 +3,9 @@
 #include "Processor.h"
 #include "DisAssembler.h"
 
-DisAssemblyErr_t DisAssembly(DisAsmContext_t DisAsmContext, Processor_t *Processor)
+DisAssemblyErr_t DisAssembly(DisAsm_files DisAsm_Files, Processor_t *Processor)
 {
-    const char *DisAsm_file = DisAsmContext.DisAsm_file;
+    const char *DisAsm_file = DisAsm_Files.DisAsm_file;
     FILE *DisAsm_ptr = fopen(DisAsm_file, "w");
 
     printf("CODELEN = %d\n", Processor -> CodeLen);
@@ -186,6 +186,20 @@ DisAssemblyErr_t DisAssembleInstruct(FILE *DisAsm_ptr, Processor_t *Processor)
 
         case RET_num:
         {
+            fprintf(DisAsm_ptr, "RET\n");
+            Processor -> IP += 1;
+            return DISASSEMBLY_SUCCESS;
+        }
+
+        case PUSHm_num:
+        {
+            fprintf(DisAsm_ptr, "RET\n");
+            Processor -> IP += 2;
+            return DISASSEMBLY_SUCCESS;
+        }
+
+        case POPm_num:
+        {   
             fprintf(DisAsm_ptr, "RET\n");
             Processor -> IP += 1;
             return DISASSEMBLY_SUCCESS;

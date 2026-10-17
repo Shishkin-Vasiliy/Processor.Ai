@@ -7,11 +7,11 @@ enum DisAssemblyErr_t {
     DISASM_FAIL = 2
 };
 
-struct DisAsmContext_t {
+struct DisAsm_files {
     const char *DisAsm_file;
 };
 
-DisAssemblyErr_t DisAssembly(DisAsmContext_t DisAsmContext, Processor_t *Processor);
+DisAssemblyErr_t DisAssembly(DisAsm_files DisAsm_Files, Processor_t *Processor);
 DisAssemblyErr_t DisAssembleInstruct(FILE *DisAsm_ptr, Processor_t *Processor);
 void DisAssemblyErrMsg(DisAssemblyErr_t DisAsmErr);
 

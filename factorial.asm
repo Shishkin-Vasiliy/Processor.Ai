@@ -6,7 +6,7 @@ HLT
 :factorial
 POPr RAX
 PUSHr RAX
-PUSH 1
+PUSH 1       
 JA :recursion
 PUSH 1
 RET
