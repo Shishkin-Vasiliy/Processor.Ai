@@ -59,6 +59,7 @@ AssemblyErr_t Assembly(Asm_files Asm_Files, Processor_t *Processor)
         {
             if (IsEmptyLine(index[i]))
                 continue;
+            printf("%lu-й проход ассемблера\n",i);
             AsmErr = AssembleInstruct(index[i], Processor, Labels, N, ByteCode_ptr);
             if (AsmErr)
             {
@@ -68,7 +69,7 @@ AssemblyErr_t Assembly(Asm_files Asm_Files, Processor_t *Processor)
             }
         }
     }  
-    
+     
     Processor -> CodeLen = Processor -> IP;    
 
     Processor -> IP = 0;
@@ -93,12 +94,66 @@ AssemblyErr_t AssembleInstruct(const char *string, Processor_t *Processor, int *
 
     AssemblyErr_t err = ASSEMBLY_SUCCESS;
 
-    int NumElems = sscanf(string, ":%s", AsmCtx.LabelBuf);
+    int NumElems = 0;
 
+    
+    
+    NumElems = sscanf(string, "%s %lg", AsmCtx.InstructBuf, &(AsmCtx.InstructVal));
+    if (NumElems == 2)
+    {
+        printf("1 сканф\n");
+        err = AssembleDblArg(Processor, &AsmCtx, ByteCode_ptr, PassNum);
+        printf("err 1 сканф = %d\n", err);
+        if (!err)
+            return ASSEMBLY_SUCCESS;
+    }
+    
+    NumElems = sscanf(string, "%s :%s", AsmCtx.InstructBuf, AsmCtx.LabelBuf);
+    if (NumElems == 2)
+    {
+        printf("2 сканф\n");
+        err = AssembleLabelArg(Processor, &AsmCtx, ByteCode_ptr, PassNum, Labels);
+        printf("err 2 сканф = %d\n", err);
+        if (!err)
+            return ASSEMBLY_SUCCESS;
+    }
+    
+    NumElems = sscanf(string, "%s [%d]", AsmCtx.InstructBuf, &(AsmCtx.RamIndex));
+    if (NumElems == 2)
+    {
+        printf("3 сканф\n");
+        err = AssembleRamIndex(Processor, &AsmCtx, ByteCode_ptr, PassNum);
+        printf("err 3 сканф = %d\n", err);
+        if (!err)
+            return ASSEMBLY_SUCCESS;
+    }
+    
+    NumElems = sscanf(string, "%s [%99[^]]", AsmCtx.InstructBuf, AsmCtx.RegBuf);
+    if (NumElems == 2)
+    {
+        printf("4 сканф\n");
+        err = AssembleRamRegIndex(Processor, &AsmCtx, ByteCode_ptr, PassNum);
+        printf("err 4 сканф = %d\n", err);
+        if (!err)
+            return ASSEMBLY_SUCCESS;
+    }
+    
+    NumElems = sscanf(string, "%s %s", AsmCtx.InstructBuf, AsmCtx.RegBuf);
+    if (NumElems == 2)
+    {
+        printf("5 сканф\n");
+        err = AssembleRegArg(Processor, &AsmCtx, ByteCode_ptr, PassNum);
+        printf("err 5 сканф = %d\n", err);
+        if (!err)
+            return ASSEMBLY_SUCCESS;
+    }
+    
+    NumElems = sscanf(string, ":%s", AsmCtx.LabelBuf);
     if (NumElems == 1)
     {
-        printf("Reading Label\n");
+        printf("6 сканф\n");
         err = AssembleLabel(Processor, &AsmCtx, Labels);
+        printf("err 6 сканф = %d\n", err);
         if (!err)   
             return ASSEMBLY_SUCCESS;
     }
@@ -106,57 +161,13 @@ AssemblyErr_t AssembleInstruct(const char *string, Processor_t *Processor, int *
     NumElems = sscanf(string, "%s", AsmCtx.InstructBuf);
     if (NumElems == 1)
     {
-        printf("Reading No Args\n");
+        printf("7 сканф\n");
         err = AssembleNoArgs(Processor, &AsmCtx, ByteCode_ptr, PassNum);
-        if (!err)
-                return ASSEMBLY_SUCCESS;
-    }
-
-    NumElems = sscanf(string, "%s %lg", AsmCtx.InstructBuf, &(AsmCtx.InstructVal));
-    if (NumElems == 2)
-    {
-        printf("Reading Dbl Arg\n");
-        err = AssembleDblArg(Processor, &AsmCtx, ByteCode_ptr, PassNum);
+        printf("err 7 сканф = %d\n", err);
         if (!err)
             return ASSEMBLY_SUCCESS;
     }
-
-    NumElems = sscanf(string, "%s :%s", AsmCtx.InstructBuf, AsmCtx.LabelBuf);
-    if (NumElems == 2)
-    {
-        printf("Reading Label Arg\n");
-        err = AssembleLabelArg(Processor, &AsmCtx, ByteCode_ptr, PassNum, Labels);
-        if (!err)
-            return ASSEMBLY_SUCCESS;
-    }
-
-    NumElems = sscanf(string, "%s %s", AsmCtx.InstructBuf, AsmCtx.RegBuf);
-    if (NumElems == 2)
-    {
-        printf("Reading Reg Arg\n");
-        err = AssembleRegArg(Processor, &AsmCtx, ByteCode_ptr, PassNum);
-        if (!err)
-            return ASSEMBLY_SUCCESS;
-    }
-
-    NumElems = sscanf(string, "%s [%d]", AsmCtx.InstructBuf, &(AsmCtx.RamIndex));
-    if (NumElems == 2)
-    {
-        printf("Reading Ram Index\n");
-        err = AssembleRamIndex(Processor, &AsmCtx, ByteCode_ptr, PassNum);
-        if (!err)
-            return ASSEMBLY_SUCCESS;
-    }
-
-    NumElems = sscanf(string, "%s [%99[^]]", AsmCtx.InstructBuf, AsmCtx.RegBuf);
-    if (NumElems == 2)
-    {
-        printf("Reading Ram Reg Index\n");
-        err = AssembleRamRegIndex(Processor, &AsmCtx, ByteCode_ptr, PassNum);
-        if (!err)
-            return ASSEMBLY_SUCCESS;
-    }
- 
+    
     return SYNTAX_ERR;
 }
 
@@ -189,10 +200,6 @@ InstructNum_t GetInstructNum(const char *InstructBuf)
         return DIV_num;
     else if (strcmp(InstructBuf, "MUL") == 0)
         return MUL_num;
-    else if (strcmp(InstructBuf, "PUSHr") == 0)
-        return PUSHr_num;
-    else if (strcmp(InstructBuf, "POPr") == 0)
-        return POPr_num;
     else if (strcmp(InstructBuf, "JMP") == 0)
         return JMP_num;
     else if (strcmp(InstructBuf, "JA") == 0)
@@ -215,10 +222,6 @@ InstructNum_t GetInstructNum(const char *InstructBuf)
         return CALL_num;
     else if (strcmp(InstructBuf, "RET") == 0)
         return RET_num;
-    else if (strcmp(InstructBuf, "PUSHm") == 0)
-        return PUSHm_num;
-    else if (strcmp(InstructBuf, "POPm") == 0)
-        return POPm_num;
     else
         return UNKNOWN_num;
 }
@@ -272,15 +275,12 @@ AssemblyErr_t AssembleNoArgs(Processor_t *Processor, AsmCtx_t *AsmCtx, FILE *Byt
 {
     AsmCtx -> InstructNum = GetInstructNum(AsmCtx -> InstructBuf);
     InstructNum_t InstructNum = AsmCtx -> InstructNum;
-    printf("InstructNum = %d\n", InstructNum);
     if ((InstructNum == UNKNOWN_num) || (InstructNum == PUSH_num) 
-    ||  (InstructNum == PUSHr_num)   || (InstructNum == POPr_num)
     ||  (InstructNum == JMP_num)     || (InstructNum == JA_num) 
     ||  (InstructNum == JA_num)      || (InstructNum == JAE_num)
     ||  (InstructNum == JB_num)      || (InstructNum == JBE_num)
     ||  (InstructNum == JE_num)      || (InstructNum == JNE_num)
-    ||  (InstructNum == CALL_num)    || (InstructNum == PUSHm_num)
-    ||  (InstructNum == POPm_num))         
+    ||  (InstructNum == CALL_num))         
     {
         return SYNTAX_ERR;
     }
@@ -288,7 +288,7 @@ AssemblyErr_t AssembleNoArgs(Processor_t *Processor, AsmCtx_t *AsmCtx, FILE *Byt
     {
         if (PassNum == 2 && ByteCode_ptr)
             fprintf(ByteCode_ptr, "%d\n", AsmCtx -> InstructNum);
-        Processor -> CodeSegment[Processor -> IP] = (StackElem_t)(AsmCtx -> InstructNum);
+        Processor -> CodeSegment[Processor -> IP] = (StackElem_t)(InstructNum);
         Processor -> IP += 1;
         return ASSEMBLY_SUCCESS;
     }
@@ -298,21 +298,23 @@ AssemblyErr_t AssembleDblArg(Processor_t *Processor, AsmCtx_t *AsmCtx, FILE *Byt
 {
     AsmCtx -> InstructNum = GetInstructNum(AsmCtx -> InstructBuf);
     InstructNum_t InstructNum = AsmCtx -> InstructNum;
-    printf("InstructNum = %d\n", AsmCtx -> InstructNum);
     if ((InstructNum == UNKNOWN_num) || ((InstructNum != PUSH_num)
-    &&  (InstructNum != PUSHr_num)   && (InstructNum != POPr_num)
     &&  (InstructNum != JMP_num)     && (InstructNum != JA_num)
     &&  (InstructNum != JAE_num)     && (InstructNum != JB_num)
     &&  (InstructNum != JBE_num)     && (InstructNum != JE_num)
     &&  (InstructNum != JNE_num)     && (InstructNum != CALL_num)
-    &&  (InstructNum != PUSHm_num)   && (InstructNum != POPm_num)))
+    &&  (InstructNum != POP_num)))
     {
         return SYNTAX_ERR;
     }
-    if (PassNum == 2 && ByteCode_ptr)
-        fprintf(ByteCode_ptr, "%d ", AsmCtx -> InstructNum);
-    Processor -> CodeSegment[Processor -> IP] = (StackElem_t)(AsmCtx -> InstructNum);
+    
+    Processor -> CodeSegment[Processor -> IP] = (StackElem_t)(InstructNum | DBLMASK);
     Processor -> CodeSegment[Processor -> IP + 1] = AsmCtx -> InstructVal;
+
+    if (PassNum == 2 && ByteCode_ptr)
+    {
+        fprintf(ByteCode_ptr, "%d %lg\n", AsmCtx -> InstructNum | DBLMASK, Processor -> CodeSegment[Processor -> IP + 1]);
+    }
     Processor -> IP += 2;
 
     return ASSEMBLY_SUCCESS;
@@ -322,22 +324,19 @@ AssemblyErr_t AssembleLabelArg(Processor_t *Processor, AsmCtx_t *AsmCtx, FILE *B
 {
     AsmCtx -> InstructNum = GetInstructNum(AsmCtx -> InstructBuf);
     InstructNum_t InstructNum = AsmCtx -> InstructNum;
-    printf("InstructNum = %d\n", AsmCtx -> InstructNum);
-    if ((InstructNum == UNKNOWN_num) || ((InstructNum != PUSH_num)
-    &&  (InstructNum != PUSHr_num)   && (InstructNum != POPr_num)
-    &&  (InstructNum != JMP_num)     && (InstructNum != JA_num)
-    &&  (InstructNum != JAE_num)     && (InstructNum != JB_num)
-    &&  (InstructNum != JBE_num)     && (InstructNum != JE_num)
-    &&  (InstructNum != JNE_num)     && (InstructNum != CALL_num)
-    &&  (InstructNum != PUSHm_num)   && (InstructNum != POPm_num)))
+    if ((InstructNum == UNKNOWN_num) || ((InstructNum != JMP_num)     
+    && (InstructNum != JA_num)       &&  (InstructNum != JAE_num)     
+    && (InstructNum != JB_num)       &&  (InstructNum != JBE_num) 
+    && (InstructNum != JE_num)       &&  (InstructNum != JNE_num)
+    && (InstructNum != CALL_num)))
     {
         return SYNTAX_ERR;
     }
-    if (PassNum == 2 && ByteCode_ptr)
-        fprintf(ByteCode_ptr, "%d ", AsmCtx -> InstructNum);
     AsmCtx -> LabelNum = HashString(AsmCtx -> LabelBuf);    
     if (PassNum == 2 && ByteCode_ptr)
-        fprintf(ByteCode_ptr, "%lg\n", (StackElem_t)Labels[AsmCtx -> LabelNum]);
+    {
+        fprintf(ByteCode_ptr, "%d %lg\n", AsmCtx -> InstructNum, (StackElem_t)Labels[AsmCtx -> LabelNum]);
+    }
 
     Processor -> CodeSegment[Processor -> IP] = (StackElem_t)InstructNum;
     Processor -> CodeSegment[Processor -> IP + 1] = (StackElem_t)Labels[AsmCtx -> LabelNum];
@@ -350,22 +349,19 @@ AssemblyErr_t AssembleRegArg(Processor_t *Processor, AsmCtx_t *AsmCtx, FILE *Byt
 {
     AsmCtx -> InstructNum = GetInstructNum(AsmCtx -> InstructBuf);
     InstructNum_t InstructNum = AsmCtx -> InstructNum;
-    printf("InstructNum = %d\n", AsmCtx -> InstructNum);
     if ((InstructNum == UNKNOWN_num) || ((InstructNum != PUSH_num)
-    &&  (InstructNum != PUSHr_num)   && (InstructNum != POPr_num)
-    &&  (InstructNum != JMP_num)     && (InstructNum != JA_num)
-    &&  (InstructNum != JAE_num)     && (InstructNum != JB_num)
-    &&  (InstructNum != JBE_num)     && (InstructNum != JE_num)
-    &&  (InstructNum != JNE_num)     && (InstructNum != CALL_num)
-    &&  (InstructNum != PUSHm_num)   && (InstructNum != POPm_num)))
+    &&  (InstructNum != POP_num)))
     {
         return SYNTAX_ERR;
     }
-    if (PassNum == 2 && ByteCode_ptr)
-        fprintf(ByteCode_ptr, "%d ", AsmCtx -> InstructNum);
     AsmCtx -> RegNum = GetRegNum(AsmCtx -> RegBuf);    
-    Processor -> CodeSegment[Processor -> IP] = (StackElem_t)InstructNum;
+    Processor -> CodeSegment[Processor -> IP] = (StackElem_t)(InstructNum | REGMASK);
     Processor -> CodeSegment[Processor -> IP + 1] = (StackElem_t)(AsmCtx -> RegNum);
+
+    if (PassNum == 2 && ByteCode_ptr)
+    {
+        fprintf(ByteCode_ptr, "%d %lg\n", AsmCtx -> InstructNum | REGMASK, Processor -> CodeSegment[Processor -> IP + 1]);
+    }
     Processor -> IP += 2;
     return ASSEMBLY_SUCCESS;
 }
@@ -374,21 +370,18 @@ AssemblyErr_t AssembleRamIndex(Processor_t *Processor, AsmCtx_t *AsmCtx, FILE *B
 {
     AsmCtx -> InstructNum = GetInstructNum(AsmCtx -> InstructBuf);
     InstructNum_t InstructNum = AsmCtx -> InstructNum;
-    printf("InstructNum = %d\n", AsmCtx -> InstructNum);
     if ((InstructNum == UNKNOWN_num) || ((InstructNum != PUSH_num)
-    &&  (InstructNum != PUSHr_num)   &&  (InstructNum != POPr_num)
-    &&  (InstructNum != JMP_num)     &&  (InstructNum != JA_num)
-    &&  (InstructNum != JAE_num)     &&  (InstructNum != JB_num)
-    &&  (InstructNum != JBE_num)     &&  (InstructNum != JE_num)
-    &&  (InstructNum != JNE_num)     &&  (InstructNum != CALL_num)
-    &&  (InstructNum != PUSHm_num)   &&  (InstructNum != POPm_num)))
+    &&  (InstructNum != POP_num)))
     {
         return SYNTAX_ERR;
     }
+    Processor -> CodeSegment[Processor -> IP] = (StackElem_t)(InstructNum | MEMMASK);
+    Processor -> CodeSegment[Processor -> IP + 1] = (StackElem_t)(AsmCtx -> RamIndex);
+
     if (PassNum == 2 && ByteCode_ptr)
-        fprintf(ByteCode_ptr, "%d ", AsmCtx -> InstructNum);
-    Processor -> CodeSegment[Processor -> IP] = (StackElem_t)InstructNum;
-    Processor -> CodeSegment[Processor -> IP + 1] = (StackElem_t)((Processor -> RAM)[AsmCtx -> RamIndex]);
+    {
+        fprintf(ByteCode_ptr, "%d %lg\n",  AsmCtx -> InstructNum | MEMMASK, Processor -> CodeSegment[Processor -> IP + 1]);
+    }
     Processor -> IP += 2;
     return ASSEMBLY_SUCCESS;
 }
@@ -397,22 +390,19 @@ AssemblyErr_t AssembleRamRegIndex(Processor_t *Processor, AsmCtx_t *AsmCtx, FILE
 {
     AsmCtx -> InstructNum = GetInstructNum(AsmCtx -> InstructBuf);
     InstructNum_t InstructNum = AsmCtx -> InstructNum;
-    printf("InstructNum = %d\n", AsmCtx -> InstructNum);
     if ((InstructNum == UNKNOWN_num) || ((InstructNum != PUSH_num)
-    &&  (InstructNum != PUSHr_num)   && (InstructNum != POPr_num)
-    &&  (InstructNum != JMP_num)     && (InstructNum != JA_num)
-    &&  (InstructNum != JAE_num)     && (InstructNum != JB_num)
-    &&  (InstructNum != JBE_num)     && (InstructNum != JE_num)
-    &&  (InstructNum != JNE_num)     && (InstructNum != CALL_num)
-    &&  (InstructNum != PUSHm_num)   && (InstructNum != POPm_num)))
+    &&  (InstructNum != POP_num)))
     {
         return SYNTAX_ERR;
     }
+    AsmCtx -> RegNum = GetRegNum(AsmCtx -> RegBuf);
+    Processor -> CodeSegment[Processor -> IP] = (StackElem_t)(InstructNum | REGMASK | MEMMASK);
+    Processor -> CodeSegment[Processor -> IP + 1] = (StackElem_t)(AsmCtx -> RegNum);
+
     if (PassNum == 2 && ByteCode_ptr)
-        fprintf(ByteCode_ptr, "%d ", AsmCtx -> InstructNum);
-    REGS RegNum = GetRegNum(AsmCtx -> RegBuf);
-    Processor -> CodeSegment[Processor -> IP] = (StackElem_t)InstructNum;
-    Processor -> CodeSegment[Processor -> IP + 1] = (StackElem_t)((Processor -> RAM)[RegNum]);
+    {
+        fprintf(ByteCode_ptr, "%d %lg\n",  AsmCtx -> InstructNum | REGMASK | MEMMASK, Processor -> CodeSegment[Processor -> IP + 1]);
+    }
     Processor -> IP += 2;
 
     return ASSEMBLY_SUCCESS;

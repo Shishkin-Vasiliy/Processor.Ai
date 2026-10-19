@@ -34,9 +34,9 @@ DisAssemblyErr_t DisAssembleInstruct(FILE *DisAsm_ptr, Processor_t *Processor)
     if (!DisAsm_ptr)
         return BAD_FILE_PTR;
 
-    InstructNum_t InstructNum = UNKNOWN_num;
+    int InstructNum = (int)UNKNOWN_num;
 
-    InstructNum = (InstructNum_t)(Processor -> CodeSegment)[Processor -> IP];
+    InstructNum = (int)(Processor -> CodeSegment)[Processor -> IP];
     printf("InstructNum = %d\n", InstructNum);
     switch(InstructNum)
     {
@@ -55,10 +55,190 @@ DisAssemblyErr_t DisAssembleInstruct(FILE *DisAsm_ptr, Processor_t *Processor)
             return DISASSEMBLY_SUCCESS;
         }
 
+        case (PUSH_num | DBLMASK):
+        {
+            StackElem_t InstructVal = (Processor -> CodeSegment)[Processor -> IP + 1];
+            fprintf(DisAsm_ptr, "PUSH %lg\n", InstructVal);
+            Processor -> IP += 2;
+            return DISASSEMBLY_SUCCESS;
+        }
+
+        case (PUSH_num | REGMASK | MEMMASK):
+        {
+            int RegNum = (int)((Processor -> CodeSegment)[Processor -> IP + 1]);
+
+            switch(RegNum)
+            {
+                case RAX:
+                {
+                    fprintf(DisAsm_ptr, "PUSH [RAX]\n");
+                    Processor -> IP += 2;
+                    return DISASSEMBLY_SUCCESS;
+                }
+
+                case RBX:
+                {
+                    fprintf(DisAsm_ptr, "PUSH [RBX]\n");
+                    Processor -> IP += 2;
+                    return DISASSEMBLY_SUCCESS;
+                }
+
+                case RCX:
+                {
+                    fprintf(DisAsm_ptr, "PUSH [RCX]\n");
+                    Processor -> IP += 2;
+                    return DISASSEMBLY_SUCCESS;
+                }
+
+                case RDX:
+                {
+                    fprintf(DisAsm_ptr, "PUSH [RDX]\n");
+                    Processor -> IP += 2;
+                    return DISASSEMBLY_SUCCESS;
+                }
+
+                default:
+                    return DISASM_FAIL;
+            }
+        }
+
+        case (PUSH_num | REGMASK):
+        {
+            int RegNum = (int)((Processor -> CodeSegment)[Processor -> IP + 1]);
+            
+            switch(RegNum)
+            {
+                case RAX:
+                {
+                    fprintf(DisAsm_ptr, "PUSH RAX\n");
+                    Processor -> IP += 2;
+                    return DISASSEMBLY_SUCCESS;
+                }
+
+                case RBX:
+                {
+                    fprintf(DisAsm_ptr, "PUSH RBX\n");
+                    Processor -> IP += 2;
+                    return DISASSEMBLY_SUCCESS;
+                }
+
+                case RCX:
+                {
+                    fprintf(DisAsm_ptr, "PUSH RCX\n");
+                    Processor -> IP += 2;
+                    return DISASSEMBLY_SUCCESS;
+                }
+
+                case RDX:
+                {
+                    fprintf(DisAsm_ptr, "PUSH RDX\n");
+                    Processor -> IP += 2;
+                    return DISASSEMBLY_SUCCESS;
+                }
+
+                default:
+                    return DISASM_FAIL;
+            }
+        }
+
+        case (PUSH_num | MEMMASK):
+        {
+            int address = (int)((Processor -> CodeSegment)[Processor -> IP + 1]);
+            fprintf(DisAsm_ptr, "PUSH [%d\n]", address);
+            Processor -> IP += 2;
+            return DISASSEMBLY_SUCCESS;
+        }
+
         case POP_num:
         {
             fprintf(DisAsm_ptr, "POP\n");
             Processor -> IP += 1;
+            return DISASSEMBLY_SUCCESS;
+        }
+
+        case (POP_num | REGMASK | MEMMASK):
+        {
+            int RegNum = (int)((Processor -> CodeSegment)[Processor -> IP + 1]);
+
+            switch(RegNum)
+            {
+                case RAX:
+                {
+                    fprintf(DisAsm_ptr, "POP [RAX]\n");
+                    Processor -> IP += 2;
+                    return DISASSEMBLY_SUCCESS;
+                }
+
+                case RBX:
+                {
+                    fprintf(DisAsm_ptr, "POP [RBX]\n");
+                    Processor -> IP += 2;
+                    return DISASSEMBLY_SUCCESS;
+                }
+
+                case RCX:
+                {
+                    fprintf(DisAsm_ptr, "POP [RCX]\n");
+                    Processor -> IP += 2;
+                    return DISASSEMBLY_SUCCESS;
+                }
+
+                case RDX:
+                {
+                    fprintf(DisAsm_ptr, "POP [RDX]\n");
+                    Processor -> IP += 2;
+                    return DISASSEMBLY_SUCCESS;
+                }
+
+                default:
+                    return DISASM_FAIL;
+            }
+        }
+
+        case (POP_num | REGMASK):
+        {
+            int RegNum = (int)((Processor -> CodeSegment)[Processor -> IP + 1]);
+
+            switch(RegNum)
+            {
+                case RAX:
+                {
+                    fprintf(DisAsm_ptr, "POP RAX\n");
+                    Processor -> IP += 2;
+                    return DISASSEMBLY_SUCCESS;
+                }
+
+                case RBX:
+                {
+                    fprintf(DisAsm_ptr, "POP RBX\n");
+                    Processor -> IP += 2;
+                    return DISASSEMBLY_SUCCESS;
+                }
+
+                case RCX:
+                {
+                    fprintf(DisAsm_ptr, "POP RCX\n");
+                    Processor -> IP += 2;
+                    return DISASSEMBLY_SUCCESS;
+                }
+
+                case RDX:
+                {
+                    fprintf(DisAsm_ptr, "POP RDX\n");
+                    Processor -> IP += 2;
+                    return DISASSEMBLY_SUCCESS;
+                }
+
+                default:
+                    return DISASM_FAIL;
+            }
+        }
+
+        case (POP_num | MEMMASK):
+        {
+            int address = (int)(Processor -> CodeSegment[Processor -> IP + 1]);
+            fprintf(DisAsm_ptr, "POP [%d\n]", address);
+            Processor -> IP += 2;
             return DISASSEMBLY_SUCCESS;
         }
 
@@ -87,22 +267,6 @@ DisAssemblyErr_t DisAssembleInstruct(FILE *DisAsm_ptr, Processor_t *Processor)
         {
             fprintf(DisAsm_ptr, "MUL\n");
             Processor -> IP += 1;
-            return DISASSEMBLY_SUCCESS;
-        }
-
-        case PUSHr_num:
-        {
-            REGS RegNum = (REGS)(Processor -> CodeSegment)[Processor -> IP + 1];
-            fprintf(DisAsm_ptr, "PUSHr %d\n", RegNum);
-            Processor -> IP += 2;
-            return DISASSEMBLY_SUCCESS;
-        }
-
-        case POPr_num:
-        {
-            REGS RegNum = (REGS)(Processor -> CodeSegment)[Processor -> IP + 1];
-            fprintf(DisAsm_ptr, "POPr %d\n", RegNum);
-            Processor -> IP += 2;
             return DISASSEMBLY_SUCCESS;
         }
 
@@ -186,20 +350,6 @@ DisAssemblyErr_t DisAssembleInstruct(FILE *DisAsm_ptr, Processor_t *Processor)
 
         case RET_num:
         {
-            fprintf(DisAsm_ptr, "RET\n");
-            Processor -> IP += 1;
-            return DISASSEMBLY_SUCCESS;
-        }
-
-        case PUSHm_num:
-        {
-            fprintf(DisAsm_ptr, "RET\n");
-            Processor -> IP += 2;
-            return DISASSEMBLY_SUCCESS;
-        }
-
-        case POPm_num:
-        {   
             fprintf(DisAsm_ptr, "RET\n");
             Processor -> IP += 1;
             return DISASSEMBLY_SUCCESS;

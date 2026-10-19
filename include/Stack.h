@@ -66,32 +66,32 @@ StackErr_t StackStructChickenCheck(Stack_t *DblStk);
 StackErr_t StackDataChickenCheck(Stack_t *DblStk);
 int DblCmp(StackElem_t a, StackElem_t b);
 
-#define STACK_CTOR(DblStk, capacity) (StackCTor(&(DblStk), (capacity) \
-                                    ON_DBG(, #DblStk,              \
-                                            __FILE__,           \
-                                            __func__,           \
-                                            __LINE__,           \
-                                            __TIME__,           \
+#define STACK_CTOR(DblStk, capacity) (StackCTor(&(DblStk), (capacity)   \
+                                    ON_DBG(, #DblStk,                   \
+                                            __FILE__,                   \
+                                            __func__,                   \
+                                            __LINE__,                   \
+                                            __TIME__,                   \
                                             __DATE__          ))) 
 
 
 #ifdef STACK_DEBUG
-#define ERROR_MSG(DblStk, err)     \
-do                              \
-{                               \
-    if (err)                    \
-    {                           \
-        StackErrMsg(err);   \
-        StackDump(DblStk);         \
-    }                           \
+#define ERROR_MSG(DblStk, err)      \
+do                                  \
+{                                   \
+    if (err)                        \
+    {                               \
+        StackErrMsg(err);           \
+        StackDump(DblStk);          \
+    }                               \
 } while (0) 
 
 #else
-#define ERROR_MSG(DblStk, err)     \
-do                              \
-{                               \
-    if (err)                    \
-        StackErrMsg(err);   \
+#define ERROR_MSG(DblStk, err)      \
+do                                  \
+{                                   \
+    if (err)                        \
+        StackErrMsg(err);           \
 } while (0)
 #endif
 

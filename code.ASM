@@ -1,4 +1,19 @@
-PUSH 3
-POPm [RBX]
-PUSHm [RBX]
-OUT
+PUSH 0
+POP RAX          ; инициализация счетчика RAX = 0
+
+:start
+PUSH 10
+PUSH RAX
+JA :cycle
+HLT
+
+:cycle
+PUSH RAX
+POP RBX         ; получили значение ячейки равное значению счетчика
+PUSH RBX
+POP [RAX]
+PUSH 1
+PUSH RAX
+ADD
+POP RAX           ; RAX = RAX + 1
+JMP :start

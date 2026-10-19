@@ -12,8 +12,6 @@ static const Instruct InstructionTable[] = {
     SUB,
     DIV,
     MUL,
-    PUSHr,
-    POPr,
     JMP,
     JA,
     JAE,
@@ -25,8 +23,6 @@ static const Instruct InstructionTable[] = {
     IN,
     CALL,
     RET,
-    PUSHm,
-    POPm
 };
 
 void ProcessorInit(Stack_t *DblStk, Stack_t *RetStk, Processor_t *Processor)
@@ -41,7 +37,6 @@ void ProcessorInit(Stack_t *DblStk, Stack_t *RetStk, Processor_t *Processor)
     Processor -> RAM = (StackElem_t *)calloc(RAM_SIZE, sizeof(StackElem_t));
     if (!Processor -> RAM)
         return;
-    printf("ram calloc success\n");
     for (size_t i = 0; i < NUM_REGS; i++)
         Processor -> Regs[i] = 0;
 }
@@ -94,7 +89,7 @@ ProcessingErr_t RunInstruct(Processor_t *Processor)
         printf("UNKONWN_num\n");
         return SEGMENTATION_FAULT;
     }
-    ProcessingErr_t err = InstructionTable[(int)((Processor -> CodeSegment)[IP])](Processor); 
+    ProcessingErr_t err = InstructionTable[(((int)(Processor -> CodeSegment)[IP]) & 0x1F)](Processor); 
     if (err)
         return err;
     
@@ -109,32 +104,104 @@ ProcessingErr_t HLT(Processor_t *Processor)
 
 ProcessingErr_t PUSH(Processor_t *Processor)
 {
-    StackElem_t *CodeSegment = Processor -> CodeSegment;
-    Stack_t *DblStk = Processor -> DblStk;
-    int IP = Processor -> IP;
-    StackElem_t val = CodeSegment[IP + 1];
+    int RealInstructNum = (int)(Processor -> CodeSegment[Processor -> IP]);
+    StackErr_t StkErr = STACK_OK;    
 
-    StackErr_t err = StackPush(DblStk, val);
-    if (err)
+    switch (RealInstructNum)
     {
-        printf("StackErr = %d\n", err);
-        return STACK_CORRUPTED;
+        case (PUSH_num | REGMASK | MEMMASK):
+        {
+            int AddressFromReg = (int)(Processor -> Regs[(int)(Processor -> CodeSegment[Processor -> IP + 1])]);
+            StkErr = StackPush(Processor -> DblStk, Processor -> RAM[AddressFromReg]);
+            break;
+        }
+
+        case (PUSH_num | DBLMASK):
+        {
+            StackElem_t DblVal = Processor -> CodeSegment[Processor -> IP + 1];
+            StkErr = StackPush(Processor -> DblStk, DblVal);
+            break;
+        } 
+
+        case (PUSH_num | REGMASK):
+        {
+            StackElem_t ValFromReg = Processor -> Regs[(int)(Processor -> CodeSegment[Processor -> IP + 1])];
+            StkErr = StackPush(Processor -> DblStk, ValFromReg);
+            break;
+        }
+
+        case (PUSH_num | MEMMASK):
+        {
+            StackElem_t ValFromMem = Processor -> RAM[(int)(Processor -> CodeSegment[Processor -> IP + 1])];
+            StkErr = StackPush(Processor -> DblStk, ValFromMem);
+            break;
+        }
+
+        default:
+            ;
     }
+    if (StkErr)
+        return STACK_CORRUPTED;
+
     Processor -> IP += 2;
     return PROCESSING_OK;
 }
 
 ProcessingErr_t POP(Processor_t *Processor)
 {
-    Stack_t *DblStk = Processor -> DblStk;
-    StackElem_t val = 0;
-    StackErr_t err = StackPop(DblStk, &val);
-    if (err)
+    int RealInstructNum = (int)(Processor -> CodeSegment[Processor -> IP]);
+    StackErr_t StkErr = STACK_OK;
+    
+    switch(RealInstructNum)
     {
-        printf("StackErr = %d\n", err);
-        return STACK_CORRUPTED;
+        case (POP_num):
+        {
+            StackElem_t PopVal = 0;
+            StkErr = StackPop(Processor -> DblStk, &PopVal);
+            if (StkErr)
+                return STACK_CORRUPTED;
+            Processor -> IP += 1;
+            return PROCESSING_OK;
+        }
+
+        case (POP_num | REGMASK | MEMMASK):
+        {
+            int AddressFromReg = (int)(Processor -> Regs[(int)(Processor -> CodeSegment[Processor -> IP + 1])]);
+            StackElem_t PopVal = 0;
+
+            StkErr = StackPop(Processor -> DblStk, &PopVal);
+            Processor -> RAM[AddressFromReg] = PopVal;
+            break;
+        }
+
+        case (POP_num | REGMASK):
+        {
+            REGS RegNum = (REGS)(Processor -> CodeSegment[Processor -> IP + 1]);
+            StackElem_t PopVal = 0;
+            StkErr = StackPop(Processor -> DblStk, &PopVal);
+
+            Processor -> Regs[RegNum] = PopVal;
+            break;
+        }
+
+        case (POP_num | MEMMASK):
+        {
+            int Address = (int)(Processor -> CodeSegment[Processor -> IP + 1]);
+            StackElem_t PopVal = 0;
+            StkErr = StackPop(Processor -> DblStk, &PopVal);
+
+            Processor -> RAM[Address] = PopVal;
+            break;
+        }
+
+        default:
+            ;
     }
-    Processor -> IP += 1;
+
+    if (StkErr)
+        return STACK_CORRUPTED;
+
+    Processor -> IP += 2;
     return PROCESSING_OK;
 }
 
@@ -269,45 +336,6 @@ ProcessingErr_t MUL(Processor_t *Processor)
     return PROCESSING_OK;
 }
 
-ProcessingErr_t PUSHr(Processor_t *Processor)
-{
-    Stack_t *DblStk = Processor -> DblStk;
-    int IP = Processor -> IP;
-    StackElem_t *CodeSegment = Processor -> CodeSegment;
-    StackElem_t *Regs = Processor -> Regs;
-    REGS RegNum = (REGS)CodeSegment[IP + 1];
-
-    StackElem_t val = Regs[RegNum];
-
-    StackErr_t err = StackPush(DblStk, val);
-    if (err)
-    {
-        printf("StackErr = %d\n", err);
-        return STACK_CORRUPTED;
-    }
-
-    Processor -> IP += 2;
-    return PROCESSING_OK;
-}
-
-ProcessingErr_t POPr(Processor_t *Processor)
-{
-    Stack_t *DblStk = Processor -> DblStk;
-    int IP = Processor -> IP;
-    StackElem_t *CodeSegment = Processor -> CodeSegment;
-    REGS RegNum = (REGS)CodeSegment[IP + 1];
-
-    StackErr_t err = StackPop(DblStk, Processor -> Regs + RegNum);
-    if (err)
-    {
-        printf("StackErr = %d\n", err);
-        return STACK_CORRUPTED;
-    }
-
-    Processor -> IP += 2;
-    return PROCESSING_OK;
-}
-
 ProcessingErr_t JMP(Processor_t *Processor)
 {
     int IP = Processor -> IP;
@@ -342,7 +370,7 @@ ProcessingErr_t JA(Processor_t *Processor)
     else 
         Processor -> IP += 2;
     return JmpErr;
-}
+} 
 
 ProcessingErr_t JAE(Processor_t *Processor)
 {
@@ -540,31 +568,8 @@ ProcessingErr_t RET(Processor_t *Processor)
     return PROCESSING_OK;
 }
 
-ProcessingErr_t PUSHm(Processor_t *Processor)
-{
-    StackElem_t val = (Processor -> RAM)[(int)(Processor -> CodeSegment[Processor -> IP + 1])];
-    StackErr_t StkErr = StackPush(Processor -> DblStk, val);
-    if (StkErr)
-    {
-        printf("StackError = %d\n", StkErr);
-        return STACK_CORRUPTED;
-    }
-    Processor -> IP += 2;
-    return PROCESSING_OK;
-}
- 
-ProcessingErr_t POPm(Processor_t *Processor)
-{
-    int index = (int)(Processor -> CodeSegment[Processor -> IP + 1]);
-    StackErr_t StkErr = StackPop(Processor -> DblStk, Processor -> RAM + index);
-    if (StkErr)
-    {
-        printf("StackError = %d\n", StkErr);
-        return STACK_CORRUPTED;
-    }
-    Processor -> IP += 2;
-    return PROCESSING_OK;
-}
+
+
 
 void ProcessingErrMsg(ProcessingErr_t err)
 {

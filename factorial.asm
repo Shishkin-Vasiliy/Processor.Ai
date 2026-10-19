@@ -4,16 +4,16 @@ OUT
 HLT
 
 :factorial
-POPr RAX
-PUSHr RAX
+POP RAX
+PUSH RAX
 PUSH 1       
 JA :recursion
 PUSH 1
 RET
 
 :recursion
-PUSHr RAX
-PUSHr RAX
+PUSH RAX
+PUSH RAX
 PUSH 1
 SUB
 CALL :factorial

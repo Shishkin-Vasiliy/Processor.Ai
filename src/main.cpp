@@ -4,6 +4,7 @@
 #include "Processor.h"
 #include "Assembler.h"
 #include "DisAssembler.h"
+#include "VideoMemory.h"
 
 int main(int argc, char **argv)
 {
@@ -31,9 +32,11 @@ int main(int argc, char **argv)
 
     Processing(&Processor);
 
-    //DisAssemblyErr_t DisAsmErr = DisAssembly(DisAsm_Files, &Processor);
-    //if (DisAsmErr)
-    //    printf("DisAsmErr = %d\n", DisAsmErr);
+    DisAssemblyErr_t DisAsmErr = DisAssembly(DisAsm_Files, &Processor);
+    if (DisAsmErr)
+        printf("DisAsmErr = %d\n", DisAsmErr);
+
+    DrawMemory(&Processor);
 
     ProcessorDeinit(&Processor);
     return 0;
