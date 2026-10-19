@@ -1,6 +1,112 @@
 #include "Includes.h"
 #include "Stack.h"
 
+StackErr_t StackCTor(Stack_t *DblStk, size_t capacity
+                ON_DBG(, const char *stack_name, const char *file_name, const char *func_name, int line, const char *time, const char *date))
+{
+    printf("Initiating Stack\n");
+
+    if (capacity < STACK_MIN_CAPACITY)
+    {
+        capacity = STACK_MIN_CAPACITY;
+    }
+    else if (capacity > STACK_MAX_CAPACITY)
+    {
+        capacity = STACK_MAX_CAPACITY;
+    }
+
+    StackErr_t err = StackIsEmpty(DblStk);
+    DblStk -> buf = (StackElem_t *) calloc(capacity + 2, sizeof(StackElem_t));
+    DblStk -> data = DblStk -> buf + 1; 
+
+    *(DblStk -> buf) = CHICKEN_LOWER;
+    *(DblStk -> buf + capacity + 1) = CHICKEN_UPPER;
+
+    DblStk -> capacity = capacity;
+    
+    DblStk -> chicken_left = CHICKEN_LEFT;
+    DblStk -> chicken_right = CHICKEN_RIGHT;
+    
+    err = StackVerify(DblStk);
+
+    ON_DBG (DblStk -> stack_name = stack_name;
+            DblStk -> file_name = file_name;
+            DblStk -> func_name = func_name;
+            DblStk -> line = line;
+            DblStk -> time = time;
+            DblStk -> date = date;)
+
+    for (size_t i = 0; i < (DblStk -> capacity); i++)
+    {
+        (DblStk -> data)[i] = POIZON_DBL;
+    }
+    StackDump(DblStk);
+    return err;
+}
+
+
+StackErr_t StackDTor(Stack_t *DblStk)
+{
+    StackErr_t err = StackVerify(DblStk);
+
+    if (err)
+        return err;
+
+    printf("Destroying Stack\n");
+    StackDump(DblStk);
+
+    for (size_t i = 0; i < DblStk -> capacity + 2; i++)
+    {
+        (DblStk -> buf)[i] = POIZON_DBL;
+    }
+
+    free(DblStk -> buf);
+    DblStk -> buf = POIZON_BUF_PTR;
+    DblStk -> data = POIZON_DATA_PTR;
+
+    return STACK_OK;
+}
+
+
+StackErr_t StackPush(Stack_t *DblStk, StackElem_t value)
+{
+    StackErr_t err = StackVerify(DblStk);
+    err = STACK_OK;
+
+    if ((DblStk -> size) == (DblStk -> capacity))
+        err = ResizeUp(DblStk);
+
+    if (err)
+        return err;
+
+    DblStk -> data[DblStk -> size++] = value;
+
+    err = StackVerify(DblStk);
+    return err;
+}
+
+
+StackErr_t StackPop(Stack_t *DblStk, StackElem_t *ptr)
+{
+    StackErr_t err = StackVerify(DblStk);
+
+    if ((DblStk -> size) == 0)
+        return STACK_UNDERFLOW;
+
+    if (((DblStk -> size) <= (DblStk -> capacity / 4)) && ((DblStk -> size) > STACK_MIN_CAPACITY))
+        err = ResizeDown(DblStk);
+
+    if (err)
+        return err;
+    
+    *ptr = (DblStk -> data[--(DblStk -> size)]);
+    DblStk -> data[(DblStk -> size)] = POIZON_DBL;
+
+    err = StackVerify(DblStk);
+    return err;
+}
+
+
 StackErr_t StackVerify(Stack_t *DblStk)
 {
     #ifdef STACK_DEBUG
@@ -27,6 +133,7 @@ StackErr_t StackVerify(Stack_t *DblStk)
     return STACK_OK;
 }
 
+
 int DblCmp(StackElem_t a, StackElem_t b)
 {
     const double EPSILON = 1e-14;
@@ -39,6 +146,7 @@ int DblCmp(StackElem_t a, StackElem_t b)
         return -1;
 }
 
+
 StackErr_t StackStructChickenCheck(Stack_t *DblStk)
 {
     if (DblStk -> chicken_left != CHICKEN_LEFT) 
@@ -48,6 +156,7 @@ StackErr_t StackStructChickenCheck(Stack_t *DblStk)
     else
         return STACK_OK;
 }
+
 
 StackErr_t StackDataChickenCheck(Stack_t *DblStk)
 {
@@ -60,6 +169,7 @@ StackErr_t StackDataChickenCheck(Stack_t *DblStk)
     else
         return STACK_OK;
 }
+
 
 StackErr_t StackIsEmpty(Stack_t *DblStk)
 {
@@ -135,6 +245,7 @@ void StackDump(Stack_t *DblStk)
     #endif
 }
 
+
 void StackErrMsg(StackErr_t err)
 {
     switch(err)
@@ -181,4 +292,58 @@ void StackErrMsg(StackErr_t err)
         default:
             ;
     }
+}
+
+
+StackErr_t ResizeUp(Stack_t *DblStk)
+{
+    StackErr_t err = StackVerify(DblStk);
+
+    StackElem_t *temp = (StackElem_t *)realloc(DblStk -> buf, (DblStk -> capacity + 2) * sizeof(StackElem_t) * RESIZE_COEFF);
+    if (temp)
+    {
+        DblStk -> buf = temp;
+        DblStk -> data = temp + 1;
+    }
+
+    err = StackVerify(DblStk);
+    if (err)
+        return err;
+
+    if (DblStk -> capacity * RESIZE_COEFF > STACK_MAX_CAPACITY)
+        return STACK_OVERFLOW;
+    
+    DblStk -> capacity *= RESIZE_COEFF;
+    
+    for (size_t i = DblStk -> size; i < DblStk -> capacity; i++)
+    {
+        (DblStk -> data)[i] = POIZON_DBL;
+    } 
+    *(DblStk -> data + DblStk -> capacity) = CHICKEN_UPPER;
+
+    err = StackVerify(DblStk);
+    return err;
+}
+
+
+StackErr_t ResizeDown(Stack_t *DblStk)
+{
+    StackErr_t err = StackVerify(DblStk);
+
+    StackElem_t *temp = (StackElem_t *)realloc(DblStk -> buf, (DblStk -> capacity + 2) * sizeof(StackElem_t) / RESIZE_COEFF);
+    if (temp)
+    {
+        DblStk -> buf = temp;
+        DblStk -> data = temp + 1;
+    }
+
+    err = StackVerify(DblStk);
+    if (err)
+        return err;
+ 
+    DblStk -> capacity /= RESIZE_COEFF;
+    *(DblStk -> data + DblStk -> capacity + 1) = CHICKEN_UPPER;
+
+    err = StackVerify(DblStk);
+    return err;
 }
