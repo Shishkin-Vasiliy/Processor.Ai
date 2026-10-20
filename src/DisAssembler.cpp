@@ -144,7 +144,7 @@ DisAssemblyErr_t DisAssembleInstruct(FILE *DisAsm_ptr, Processor_t *Processor)
         case (PUSH_num | MEMMASK):
         {
             int address = (int)((Processor -> CodeSegment)[Processor -> IP + 1]);
-            fprintf(DisAsm_ptr, "PUSH [%d\n]", address);
+            fprintf(DisAsm_ptr, "PUSH [%d]\n", address);
             Processor -> IP += 2;
             return DISASSEMBLY_SUCCESS;
         }
@@ -237,7 +237,7 @@ DisAssemblyErr_t DisAssembleInstruct(FILE *DisAsm_ptr, Processor_t *Processor)
         case (POP_num | MEMMASK):
         {
             int address = (int)(Processor -> CodeSegment[Processor -> IP + 1]);
-            fprintf(DisAsm_ptr, "POP [%d\n]", address);
+            fprintf(DisAsm_ptr, "POP [%d]\n", address);
             Processor -> IP += 2;
             return DISASSEMBLY_SUCCESS;
         }

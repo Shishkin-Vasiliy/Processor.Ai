@@ -2,7 +2,7 @@
 #define PROCESSOR_H
 
 #define POIZON_CODESEG_PTR ((StackElem_t *)222)
-#define RAM_SIZE 100
+#define RAM_SIZE 200
 
 #define DBLMASK 0x20
 #define REGMASK 0x40
