@@ -14,34 +14,36 @@ AssemblyErr_t Assembly(Asm_files Asm_Files, Processor_t *Processor)
     char *buf = POIZON_CHAR_PTR;
 
     int fd = OpenFile(Asm_file);
-    size_t file_size = GetFileSize(Asm_file);
+    ssize_t file_size = GetFileSize(Asm_file);
+    if (file_size < 0)
+        return BAD_INDEX_PTR;
 
-    char **index = (char **)calloc(file_size, sizeof(char *));
+    char **index = (char **)calloc((size_t)file_size, sizeof(char *));
 
     if (!index)
     {
         AssemblyErrMsg(BAD_INDEX_PTR, Asm_file, 0);
-        size_t nlines = file_size / sizeof(char *);
-        FREEALL(ByteCode_ptr, fd, index, nlines, buf, file_size);
+        size_t nlines = (size_t)file_size / sizeof(char *);
+        FREEALL(ByteCode_ptr, fd, index, nlines, buf, (size_t)file_size);
         return BAD_INDEX_PTR;
     }
 
-    size_t nlines = ReadFromFile(&buf, index, file_size, fd);
+    size_t nlines = ReadFromFile(&buf, index, (size_t)file_size, fd);
     if (nlines == 0)
     {
         AssemblyErrMsg(BAD_INDEX_PTR, Asm_file, 0);
-        FREEALL(ByteCode_ptr, fd, index, nlines, buf, file_size);
+        FREEALL(ByteCode_ptr, fd, index, nlines, buf, (size_t)file_size);
         return BAD_INDEX_PTR;
     }
 
-    PrintStrings(index, nlines, "READ");
+    PRINT_STRINGS(index, nlines, "READ");
 
     Processor -> CodeSegment = (StackElem_t *)calloc(2 * nlines, sizeof(StackElem_t));
 
     if (!(Processor -> CodeSegment))
     {
         AssemblyErrMsg(BAD_CODESEG_PTR, Asm_file, 0);
-        FREEALL(ByteCode_ptr, fd, index, nlines, buf, file_size);
+        FREEALL(ByteCode_ptr, fd, index, nlines, buf, (size_t)file_size);
         return BAD_CODESEG_PTR;
     }
 
@@ -59,12 +61,11 @@ AssemblyErr_t Assembly(Asm_files Asm_Files, Processor_t *Processor)
         {
             if (IsEmptyLine(index[i]))
                 continue;
-            printf("%lu-й проход ассемблера\n",i);
             AsmErr = AssembleInstruct(index[i], Processor, Labels, N, ByteCode_ptr);
             if (AsmErr)
             {
                 AssemblyErrMsg(AsmErr, Asm_file, i + 1);
-                FREEALL(ByteCode_ptr, fd, index, nlines, buf, file_size);
+                FREEALL(ByteCode_ptr, fd, index, nlines, buf, (size_t)file_size);
                 return AsmErr;
             }
         }
@@ -74,7 +75,7 @@ AssemblyErr_t Assembly(Asm_files Asm_Files, Processor_t *Processor)
 
     Processor -> IP = 0;
 
-    FREEALL(ByteCode_ptr, fd, index, nlines, buf, file_size);
+    FREEALL(ByteCode_ptr, fd, index, nlines, buf, (size_t)file_size);
 
     return ASSEMBLY_SUCCESS;
 }
@@ -96,14 +97,10 @@ AssemblyErr_t AssembleInstruct(const char *string, Processor_t *Processor, int *
 
     int NumElems = 0;
 
-    
-    
     NumElems = sscanf(string, "%s %lg", AsmCtx.InstructBuf, &(AsmCtx.InstructVal));
     if (NumElems == 2)
     {
-        printf("1 сканф\n");
         err = AssembleDblArg(Processor, &AsmCtx, ByteCode_ptr, PassNum);
-        printf("err 1 сканф = %d\n", err);
         if (!err)
             return ASSEMBLY_SUCCESS;
     }
@@ -111,9 +108,7 @@ AssemblyErr_t AssembleInstruct(const char *string, Processor_t *Processor, int *
     NumElems = sscanf(string, "%s :%s", AsmCtx.InstructBuf, AsmCtx.LabelBuf);
     if (NumElems == 2)
     {
-        printf("2 сканф\n");
         err = AssembleLabelArg(Processor, &AsmCtx, ByteCode_ptr, PassNum, Labels);
-        printf("err 2 сканф = %d\n", err);
         if (!err)
             return ASSEMBLY_SUCCESS;
     }
@@ -121,9 +116,7 @@ AssemblyErr_t AssembleInstruct(const char *string, Processor_t *Processor, int *
     NumElems = sscanf(string, "%s [%d]", AsmCtx.InstructBuf, &(AsmCtx.RamIndex));
     if (NumElems == 2)
     {
-        printf("3 сканф\n");
         err = AssembleRamIndex(Processor, &AsmCtx, ByteCode_ptr, PassNum);
-        printf("err 3 сканф = %d\n", err);
         if (!err)
             return ASSEMBLY_SUCCESS;
     }
@@ -131,9 +124,7 @@ AssemblyErr_t AssembleInstruct(const char *string, Processor_t *Processor, int *
     NumElems = sscanf(string, "%s [%99[^]]", AsmCtx.InstructBuf, AsmCtx.RegBuf);
     if (NumElems == 2)
     {
-        printf("4 сканф\n");
         err = AssembleRamRegIndex(Processor, &AsmCtx, ByteCode_ptr, PassNum);
-        printf("err 4 сканф = %d\n", err);
         if (!err)
             return ASSEMBLY_SUCCESS;
     }
@@ -141,19 +132,15 @@ AssemblyErr_t AssembleInstruct(const char *string, Processor_t *Processor, int *
     NumElems = sscanf(string, "%s %s", AsmCtx.InstructBuf, AsmCtx.RegBuf);
     if (NumElems == 2)
     {
-        printf("5 сканф\n");
         err = AssembleRegArg(Processor, &AsmCtx, ByteCode_ptr, PassNum);
-        printf("err 5 сканф = %d\n", err);
         if (!err)
             return ASSEMBLY_SUCCESS;
     }
     
-    NumElems = sscanf(string, ":%s", AsmCtx.LabelBuf);
+    NumElems = sscanf(string, " :%s", AsmCtx.LabelBuf);
     if (NumElems == 1)
     {
-        printf("6 сканф\n");
         err = AssembleLabel(Processor, &AsmCtx, Labels);
-        printf("err 6 сканф = %d\n", err);
         if (!err)   
             return ASSEMBLY_SUCCESS;
     }
@@ -161,9 +148,7 @@ AssemblyErr_t AssembleInstruct(const char *string, Processor_t *Processor, int *
     NumElems = sscanf(string, "%s", AsmCtx.InstructBuf);
     if (NumElems == 1)
     {
-        printf("7 сканф\n");
         err = AssembleNoArgs(Processor, &AsmCtx, ByteCode_ptr, PassNum);
-        printf("err 7 сканф = %d\n", err);
         if (!err)
             return ASSEMBLY_SUCCESS;
     }
@@ -178,10 +163,10 @@ int HashString(char *LabelBuf)
 
     for (; LabelBuf[i] != '\0'; i++)
     {
-        Hash = ((Hash << 5) - Hash) + LabelBuf[i];
+        Hash = ((Hash << 5) - Hash) + (unsigned long long)LabelBuf[i];
     }
 
-    return (int) (Hash % MAX_LABELS);
+    return (int)(Hash % MAX_LABELS);
 }
 
 InstructNum_t GetInstructNum(const char *InstructBuf)

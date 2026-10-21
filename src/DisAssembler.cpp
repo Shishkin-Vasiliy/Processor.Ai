@@ -8,8 +8,6 @@ DisAssemblyErr_t DisAssembly(DisAsm_files DisAsm_Files, Processor_t *Processor)
     const char *DisAsm_file = DisAsm_Files.DisAsm_file;
     FILE *DisAsm_ptr = fopen(DisAsm_file, "w");
 
-    printf("CODELEN = %d\n", Processor -> CodeLen);
-
     DisAssemblyErr_t DisAsmErr = DISASSEMBLY_SUCCESS;
     while (Processor -> IP < Processor -> CodeLen) 
     { 
@@ -37,7 +35,6 @@ DisAssemblyErr_t DisAssembleInstruct(FILE *DisAsm_ptr, Processor_t *Processor)
     int InstructNum = (int)UNKNOWN_num;
 
     InstructNum = (int)(Processor -> CodeSegment)[Processor -> IP];
-    printf("InstructNum = %d\n", InstructNum);
     switch(InstructNum)
     {
         case HLT_num:

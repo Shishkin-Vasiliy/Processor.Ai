@@ -9,11 +9,11 @@
 int main(int argc, char **argv)
 {
     Asm_files Asm_Files = {
-    .Asm_file = "code.asm",
+    .Asm_file = "examples/code.asm",
     .ByteCode_file = "code.txt"
     };
 
-    if (argc == 2)
+    if (argc > 1)
         Asm_Files.Asm_file = argv[1];
 
     DisAsm_files DisAsm_Files = {
@@ -36,7 +36,7 @@ int main(int argc, char **argv)
     if (DisAsmErr)
         printf("DisAsmErr = %d\n", DisAsmErr);
 
-    DrawMemory(&Processor);
+    DRAW(Processor);
 
     ProcessorDeinit(&Processor);
     return 0;

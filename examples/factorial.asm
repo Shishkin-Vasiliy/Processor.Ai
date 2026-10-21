@@ -7,8 +7,9 @@ HLT
 POP RAX
 PUSH RAX
 PUSH 1       
-JA :recursion
-PUSH 1
+    JA :recursion
+    PUSH 1
+
 RET
 
 :recursion

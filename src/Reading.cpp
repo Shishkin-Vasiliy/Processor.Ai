@@ -13,11 +13,11 @@ int CloseFile(int fd)
     return result;
 }
 
-size_t GetFileSize(const char *file_name)
+ssize_t GetFileSize(const char *file_name)
 {
     struct stat stat_buf = {};
     stat(file_name, &stat_buf);
-    size_t file_size = stat_buf.st_size;
+    ssize_t file_size = stat_buf.st_size;
 
     return file_size;
 }

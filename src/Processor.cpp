@@ -57,13 +57,10 @@ void ProcessorDeinit(Processor_t *Processor)
 
 ProcessingErr_t Processing(Processor_t *Processor)
 {
-    StackElem_t *CodeSegment = Processor -> CodeSegment;
-
     while (Processor -> IP < Processor -> CodeLen)
     {   
         InstructNum_t InstructNum = (InstructNum_t)(Processor -> CodeSegment[Processor -> IP]);
-        ProcessorDump(Processor);
-        getchar();
+        PROCESSOR_DUMP(Processor);
         ProcessingErr_t err = RunInstruct(Processor);
 
         if (err)

@@ -1,6 +1,6 @@
 g++ src/*.cpp \
 -Iinclude \
--D  STACK_DEBUG -ggdb3 -std=c++17 -Wall -Wextra -Weffc++ -Waggressive-loop-optimizations \
+-DSTACK_DEBUG -DPROCESSOR_DEBUG -DASSEMBLER_DEBUG -DGRAPHICS_FLAG -ggdb3 -std=c++17 -Wall -Wextra -Weffc++ -Waggressive-loop-optimizations \
     -Wc++14-compat -Wmissing-declarations -Wcast-align -Wcast-qual -Wchar-subscripts \
     -Wconditionally-supported -Wconversion -Wctor-dtor-privacy -Wempty-body -Wfloat-equal \
     -Wformat-nonliteral -Wformat-security -Wformat-signedness -Wformat=2 -Winline -Wlogical-op \

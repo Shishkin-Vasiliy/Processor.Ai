@@ -4,7 +4,6 @@
 StackErr_t StackCTor(Stack_t *DblStk, size_t capacity
                 ON_DBG(, const char *stack_name, const char *file_name, const char *func_name, int line, const char *time, const char *date))
 {
-    printf("Initiating Stack\n");
 
     if (capacity < STACK_MIN_CAPACITY)
     {
@@ -52,7 +51,6 @@ StackErr_t StackDTor(Stack_t *DblStk)
     if (err)
         return err;
 
-    printf("Destroying Stack\n");
     StackDump(DblStk);
 
     for (size_t i = 0; i < DblStk -> capacity + 2; i++)

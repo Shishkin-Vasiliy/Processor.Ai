@@ -43,4 +43,10 @@ AssemblyErr_t AssembleRegArg(Processor_t *Processor, AsmCtx_t *AsmCtx, FILE *Byt
 AssemblyErr_t AssembleRamIndex(Processor_t *Processor, AsmCtx_t *AsmCtx, FILE *ByteCode_ptr, size_t PassNum);
 AssemblyErr_t AssembleRamRegIndex(Processor_t *Processor, AsmCtx_t *AsmCtx, FILE *ByteCode_ptr, size_t PassNum);
 
+#ifdef ASSEMBLER_DEBUG
+#define PRINT_STRINGS(index, nlines, REASON) PrintStrings((index), (nlines), (REASON))
+#else
+#define PRINT_STRINGS 
+#endif 
+
 #endif

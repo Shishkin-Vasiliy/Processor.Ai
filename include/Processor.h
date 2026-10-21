@@ -53,7 +53,7 @@ struct Processor_t {
     int IP;
     int CodeLen;
     StackElem_t Regs[NUM_REGS]; 
-    StackElem_t *RAM;          ///// TODO initialize with calloc
+    StackElem_t *RAM;         
 };
 
 ProcessingErr_t Processing(Processor_t *Processor);
@@ -83,5 +83,11 @@ ProcessingErr_t IN(Processor_t *Processor);
 ProcessingErr_t CALL(Processor_t *Processor);
 ProcessingErr_t RET(Processor_t *Processor);
 
+#ifdef PROCESSOR_DEBUG
+#define PROCESSOR_DUMP(Processor) ProcessorDump((Processor)); \
+getchar()
+#else                               
+#define PROCESSOR_DUMP(Processor)   
+#endif
 
 #endif

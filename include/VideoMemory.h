@@ -6,4 +6,10 @@
 
 void DrawMemory(Processor_t *Processor);
 
+#ifdef GRAPHICS_FLAG
+#define DRAW(Processor) DrawMemory(&(Processor))
+#else
+#define DRAW(Processor)
+#endif
+
 #endif
