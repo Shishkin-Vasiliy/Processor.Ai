@@ -1,5 +1,5 @@
 PUSH 0
-POP RAX          ; инициализация счетчика RAX = 0
+PUSH         ; инициализация счетчика RAX = 0
 
 :start
 PUSH 10
