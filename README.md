@@ -11,7 +11,9 @@
 * Видеопамять: вывод `RAM` в консоль в графическом виде
 * Двухпроходный ассемблер и дизассемблер
 * Примеры рабочих программ в папке `examples/`
-<details> <summary><b>Пример программы: вычисление чисел Фибоначчи: (нажмите, чтобы развернуть)</b></summary>
+<details>
+<summary><b>Пример программы: вычисление чисел Фибоначчи (нажмите, чтобы развернуть)</b></summary>
+
 ```asm
 IN
 POP RAX                         ; RAX = n
@@ -28,7 +30,7 @@ HLT
     POP RBX
     RET
 
-    :else1                      ; случай n  = 1
+    :else1                      ; случай n = 1
         PUSH RAX
         PUSH 1
         JNE :else2
@@ -41,16 +43,16 @@ HLT
             PUSH RAX
             PUSH 1
             SUB                 ; в стеке лежит n n-1
-            POP RAX             ; в стеке лежит n а в RAX лежит n-1
+            POP RAX             ; в стеке лежит n, а в RAX лежит n-1
             CALL :fib
 
-            POP RAX             ; стек пуст а в RAX лежит n
+            POP RAX             ; стек пуст, а в RAX лежит n
             PUSH RBX            ; в стеке лежит значение RBX
 
             PUSH RAX            ; в стеке лежит RBX n 
             PUSH 2              ; в стеке лежит RBX n 2
             SUB                 ; в стеке лежит RBX n-2
-            POP RAX             ; в RAX лежит n-2 а в стеке RBX
+            POP RAX             ; в RAX лежит n-2, а в стеке RBX
             CALL :fib 
 
             PUSH RBX
@@ -58,7 +60,6 @@ HLT
             POP RBX
             
             RET
-
 ```
 </details>
 
